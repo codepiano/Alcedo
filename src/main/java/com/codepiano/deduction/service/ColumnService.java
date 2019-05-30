@@ -1,5 +1,6 @@
-package com.codepiano.deduction.database;
+package com.codepiano.deduction.service;
 
+import com.codepiano.deduction.models.ColumnDescription;
 import com.codepiano.deduction.models.TableDescription;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,26 +14,29 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author codepiano
+ */
 @Service
 @Slf4j
-public class TableService {
+public class ColumnService {
 
     @Autowired
     private DataSource dataSource;
 
-    public List<TableDescription> getAllTablesInCatalog(String catalog) {
-        final List<TableDescription> result = new ArrayList<>();
-        BeanPropertyRowMapper<TableDescription> rowMapper = BeanPropertyRowMapper.newInstance(TableDescription.class);
+    public List<ColumnDescription> getAllColumnsInfoFromTable(TableDescription tableDescription) {
+        final List<ColumnDescription> result = new ArrayList<>();
+        BeanPropertyRowMapper<ColumnDescription> rowMapper = BeanPropertyRowMapper.newInstance(ColumnDescription.class);
         try {
             JdbcUtils.extractDatabaseMetaData(dataSource, dbmd -> {
-                ResultSet rs = dbmd.getTables(catalog, null, null, new String[]{"TABLE"});
+                ResultSet rs = dbmd.getColumns(tableDescription.getTableCat(), null, tableDescription.getTableName(), null);
                 while (rs.next()) {
                     result.add(rowMapper.mapRow(rs, rs.getRow()));
                 }
                 return result;
             });
         } catch (MetaDataAccessException e) {
-            log.error("get tables of catalog: %s error!", catalog, e);
+            log.error("get columns from table %s error: %s!", tableDescription.getTableName(), e);
         }
         return result;
     }
