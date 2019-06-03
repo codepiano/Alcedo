@@ -1,0 +1,48 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import java.util.*
+
+@args (TableDescription table, List<ColumnDescription> columns, TypeTransfer typeTransfer)
+
+package db
+
+@with (imports = typeTransfer.getImportTypes(columns)) {
+    @if (!imports.isEmpty()) {
+import (
+        @for (importString : imports) {
+        @importString
+        }
+)
+    }
+}
+
+/*
+ * table: @table.getTableName()
+ * table remark: @table.getRemarks()?:"none"
+ */
+type @NameTransfer.transferToCamelCase(table.getTableName()) struct {
+    @for (column : columns) {
+    /*
+     * column: @column.getColumnName()
+     * column sql type: @column.getTypeName()
+     * column size: @column.getColumnSize()?:"not applicable"
+     * column remark: @column.getColumnName()?:"none"
+     */
+    @with (primaryKeyTag = column.isPrimaryKey()? "gorm:\"primary_key\"":"") {
+    @NameTransfer.transferToCamelCase(column.getColumnName()) @typeTransfer.transferToGoLangType(column) `json:"@column.getColumnName()" @primaryKeyTag`
+    }
+
+    }
+}
+
+/*
+ * The COLUMN_SIZE column specifies the column size for the given column.
+ * For numeric data, this is the maximum precision.
+ * For character data, this is the length in characters.
+ * For datetime datatypes, this is the length in characters of the String representation (assuming the maximum allowed precision of the fractional seconds component).
+ * For binary data, this is the length in bytes.
+ * For the ROWID datatype, this is the length in bytes.
+ * Null is returned for data types where the column size is not applicable.
+ */

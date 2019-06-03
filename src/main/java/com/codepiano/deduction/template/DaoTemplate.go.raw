@@ -1,0 +1,94 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import java.util.*
+
+@args (String modelFullPath, String tableName, TypeTransfer typeTransfer)
+
+package dal
+
+import (
+	"github.com/jinzhu/gorm"
+	"@modelFullPath"
+)
+
+type @(tableName)DBAccess struct {
+	db *gorm.DB
+}
+
+// 分页查询标签
+func (tagDB *@(tableName)DBAccess) List(pageNum, pageSize int) ([]db.@(tableName), int, error) {
+	tagList := []db.@(tableName){}
+	var count int
+	query := tagDB.db
+	isPagingQuery := pageNum > 0 && pageSize > 0
+	// 分页查询
+	if isPagingQuery {
+		query.Offset((pageNum - 1) * pageSize).Limit(pageSize)
+	}
+	err := query.Find(&tagList).Error
+	if err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return tagList, 0, nil
+		}
+		return tagList, 0, err
+	}
+	if isPagingQuery {
+		if err := tagDB.db.Model(&db.@(tableName){}).Count(&count).Error; err != nil {
+			return tagList, 0, err
+		}
+	} else {
+		return tagList, len(tagList), err
+	}
+	return tagList, count, nil
+}
+
+// 创建标签
+func (tagDB *@(tableName)DBAccess) Create(tag *db.@(tableName)) error {
+	err := tagDB.db.Create(tag).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// 删除标签
+func (tagDB *@(tableName)DBAccess) Delete(id uint64, deleteBy uint64) (*db.@(tableName), error) {
+	// 查询
+	tag, err := tagDB.GetById(id)
+	if err != nil {
+		return nil, err
+	}
+	// 更新删除人
+	tag.DeletedBy = deleteBy
+	err = tagDB.Update(tag)
+	if err != nil {
+		return nil, err
+	}
+	// 执行 soft delete
+	err = tagDB.db.Delete(tag).Error
+	if err != nil {
+		return nil, err
+	}
+	return tag, nil
+}
+
+// 通过 id 查询标签
+func (tagDB *@(tableName)DBAccess) GetById(id uint64) (*db.@(tableName), error) {
+	tag := &db.@(tableName){}
+	err := tagDB.db.First(tag, id).Error
+	if err != nil {
+		return nil, err
+	}
+	return tag, nil
+}
+
+// 修改标签信息
+func (tagDB *@(tableName)DBAccess) Update(tag *db.@(tableName)) error {
+	err := tagDB.db.Save(tag).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}

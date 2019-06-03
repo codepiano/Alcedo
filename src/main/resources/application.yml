@@ -1,0 +1,12 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test
+    username: codepiano
+#    password: root
+
+output:
+  package:
+    base: "gitlab.com/test/test/"
+  dir:
+    base: /Users/codepiano/deduction/
+    bean: model/db/

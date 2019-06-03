@@ -128,4 +128,16 @@ public class ColumnDescription {
      */
     private String isGeneratedcolumn;
 
+    /**
+     * 是否是主键
+     */
+    private boolean isPrimaryKey;
+    /**
+     * 主键名称
+     */
+    private String primaryKeyName;
+    /**
+     * seq，在主键中的序号
+     */
+    private Integer primaryKeyIndex;
 }

@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.Map;
+
 /**
  * see java.sql.DatabaseMetaData#getTables(java.lang.String, java.lang.String, java.lang.String, java.lang.String[])
  *
@@ -54,4 +56,8 @@ public class TableDescription {
      * specifies how values in SELF_REFERENCING_COL_NAME are created. Values are "SYSTEM", "USER", "DERIVED". (may be null)
      */
     private String refGeneration;
+    /**
+     * primary key descriptions
+     */
+    private Map<String, PrimaryKeyDescription> primaryKeys;
 }
