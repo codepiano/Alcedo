@@ -44,6 +44,9 @@ public class DeductionApplication {
     @Value("${output.dir.bean}")
     private String modelPath;
 
+    @Value("${output.dir.dao}")
+    private String daoPath;
+
     @Value("${output.package.base}")
     private String packageBase;
 
@@ -65,6 +68,8 @@ public class DeductionApplication {
         return args -> {
             var modelDir = basePath + modelPath;
             FileUtils.forceMkdir(new File(modelDir));
+            var daoDir = basePath + daoPath;
+            FileUtils.forceMkdir(new File(daoPath));
             List<TableDescription> tables = tableService.getAllTablesInCatalog("test");
             tables.forEach(tableDescription -> {
                 // 生成 bean 代码
@@ -73,19 +78,25 @@ public class DeductionApplication {
                         .render()
                         .toString();
                 System.out.println(model);
-                File modelFile = new File(modelDir + tableDescription.getTableName() + ".go");
-                try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(modelFile))) {
-                    IOUtils.write(model, bos, StandardCharsets.UTF_8);
-                } catch (IOException e) {
-                    log.error("file {} not found!", modelFile.getAbsolutePath());
-                }
+                writeToFile(modelDir, tableDescription.getTableName(), model);
                 // 生成 model 层代码
-                String dao = DaoTemplate.template(packageBase + modelPath, NameTransfer.transferToCamelCase(tableDescription.getTableName()), typeTransfer)
+                String modelName = NameTransfer.transferToCamelCase(tableDescription.getTableName());
+                String dao = DaoTemplate.template(packageBase + modelPath, modelName, Character.toLowerCase(modelName.charAt(0)) + modelName.substring(1))
                         .render()
                         .toString();
                 System.out.println(dao);
+                writeToFile(daoDir, tableDescription.getTableName() + "_dao", dao);
             });
         };
+    }
+
+    private void writeToFile(String baseDir, String tableName, String model) {
+        File modelFile = new File(baseDir + tableName + ".go");
+        try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(modelFile))) {
+            IOUtils.write(model, bos, StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            log.error("file {} not found!", modelFile.getAbsolutePath());
+        }
     }
 
     @Bean

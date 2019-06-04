@@ -4,7 +4,7 @@
 @import com.codepiano.deduction.models.*
 @import java.util.*
 
-@args (String modelFullPath, String tableName, TypeTransfer typeTransfer)
+@args (String modelFullPath, String modelName, String variableName)
 
 package dal
 
@@ -13,80 +13,80 @@ import (
 	"@modelFullPath"
 )
 
-type @(tableName)DBAccess struct {
+type @(modelName)DBAccess struct {
 	db *gorm.DB
 }
 
-// 分页查询标签
-func (tagDB *@(tableName)DBAccess) List(pageNum, pageSize int) ([]db.@(tableName), int, error) {
-	tagList := []db.@(tableName){}
+// 分页查询@(modelName)
+func (@(variableName)DB *@(modelName)DBAccess) List(pageNum, pageSize int) ([]db.@(modelName), int, error) {
+	@(variableName)List := []db.@(modelName){}
 	var count int
-	query := tagDB.db
+	query := @(variableName)DB.db
 	isPagingQuery := pageNum > 0 && pageSize > 0
 	// 分页查询
 	if isPagingQuery {
 		query.Offset((pageNum - 1) * pageSize).Limit(pageSize)
 	}
-	err := query.Find(&tagList).Error
+	err := query.Find(&@(variableName)List).Error
 	if err != nil {
 		if gorm.IsRecordNotFoundError(err) {
-			return tagList, 0, nil
+			return @(variableName)List, 0, nil
 		}
-		return tagList, 0, err
+		return @(variableName)List, 0, err
 	}
 	if isPagingQuery {
-		if err := tagDB.db.Model(&db.@(tableName){}).Count(&count).Error; err != nil {
-			return tagList, 0, err
+		if err := @(variableName)DB.db.Model(&db.@(modelName){}).Count(&count).Error; err != nil {
+			return @(variableName)List, 0, err
 		}
 	} else {
-		return tagList, len(tagList), err
+		return @(variableName)List, len(@(variableName)List), err
 	}
-	return tagList, count, nil
+	return @(variableName)List, count, nil
 }
 
-// 创建标签
-func (tagDB *@(tableName)DBAccess) Create(tag *db.@(tableName)) error {
-	err := tagDB.db.Create(tag).Error
+// 创建@(modelName)
+func (@(variableName)DB *@(modelName)DBAccess) Create(@(variableName) *db.@(modelName)) error {
+	err := @(variableName)DB.db.Create(@(variableName)).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// 删除标签
-func (tagDB *@(tableName)DBAccess) Delete(id uint64, deleteBy uint64) (*db.@(tableName), error) {
+// 删除@(modelName)
+func (@(variableName)DB *@(modelName)DBAccess) Delete(id uint64, deleteBy uint64) (*db.@(modelName), error) {
 	// 查询
-	tag, err := tagDB.GetById(id)
+	@(variableName), err := @(variableName)DB.GetById(id)
 	if err != nil {
 		return nil, err
 	}
 	// 更新删除人
-	tag.DeletedBy = deleteBy
-	err = tagDB.Update(tag)
+	@(variableName).DeletedBy = deleteBy
+	err = @(variableName)DB.Update(@(variableName))
 	if err != nil {
 		return nil, err
 	}
 	// 执行 soft delete
-	err = tagDB.db.Delete(tag).Error
+	err = @(variableName)DB.db.Delete(@(variableName)).Error
 	if err != nil {
 		return nil, err
 	}
-	return tag, nil
+	return @(variableName), nil
 }
 
-// 通过 id 查询标签
-func (tagDB *@(tableName)DBAccess) GetById(id uint64) (*db.@(tableName), error) {
-	tag := &db.@(tableName){}
-	err := tagDB.db.First(tag, id).Error
+// 通过 id 查询@(modelName)
+func (@(variableName)DB *@(modelName)DBAccess) GetById(id uint64) (*db.@(modelName), error) {
+	@(variableName) := &db.@(modelName){}
+	err := @(variableName)DB.db.First(@(variableName), id).Error
 	if err != nil {
 		return nil, err
 	}
-	return tag, nil
+	return @(variableName), nil
 }
 
-// 修改标签信息
-func (tagDB *@(tableName)DBAccess) Update(tag *db.@(tableName)) error {
-	err := tagDB.db.Save(tag).Error
+// 修改@(modelName)信息
+func (@(variableName)DB *@(modelName)DBAccess) Update(@(variableName) *db.@(modelName)) error {
+	err := @(variableName)DB.db.Save(@(variableName)).Error
 	if err != nil {
 		return err
 	}

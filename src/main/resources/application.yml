@@ -9,4 +9,5 @@ output:
     base: "gitlab.com/test/test/"
   dir:
     base: /Users/codepiano/deduction/
-    bean: model/db/
+    bean: /model/db/
+    dao: /dal/
