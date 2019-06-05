@@ -5,6 +5,7 @@ import com.codepiano.deduction.models.TableDescription;
 import com.codepiano.deduction.service.ColumnService;
 import com.codepiano.deduction.service.TableService;
 import com.codepiano.deduction.template.BeanTemplate;
+import com.codepiano.deduction.template.DBTemplate;
 import com.codepiano.deduction.template.DaoTemplate;
 import com.codepiano.deduction.tool.NameTransfer;
 import com.codepiano.deduction.tool.TypeTransfer;
@@ -69,7 +70,7 @@ public class DeductionApplication {
             var modelDir = basePath + modelPath;
             FileUtils.forceMkdir(new File(modelDir));
             var daoDir = basePath + daoPath;
-            FileUtils.forceMkdir(new File(daoPath));
+            FileUtils.forceMkdir(new File(daoDir));
             List<TableDescription> tables = tableService.getAllTablesInCatalog("test");
             tables.forEach(tableDescription -> {
                 // 生成 bean 代码
@@ -87,6 +88,12 @@ public class DeductionApplication {
                 System.out.println(dao);
                 writeToFile(daoDir, tableDescription.getTableName() + "_dao", dao);
             });
+            // 生成 dao 对象初始化代码，注入数据库连接
+            String db = DBTemplate.template(tables)
+                    .render()
+                    .toString();
+            System.out.println(db);
+            writeToFile(daoDir, "db_access", db);
         };
     }
 
