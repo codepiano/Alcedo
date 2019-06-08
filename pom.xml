@@ -88,7 +88,7 @@
                 <groupId>com.fizzed</groupId>
                 <artifactId>rocker-maven-plugin</artifactId>
                 <configuration>
-                    <suffixRegex>.*.go.(raw)$</suffixRegex>
+                    <suffixRegex>.*.(go|mod|config).(raw)$</suffixRegex>
                     <!--                    <templateDirectory>${project.build.sourceDirectory}/com/codepiano/deduction/template</templateDirectory>-->
                 </configuration>
                 <version>1.2.1</version>

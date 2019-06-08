@@ -1,0 +1,186 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import java.util.*
+
+@args (Map<String, String> packages, String daoPackage, String servicePackage, String controllerPackage, List<TableDescription> tables)
+
+package main
+
+import (
+    "flag"
+    "fmt"
+    "github.com/fvbock/endless"
+    "github.com/gin-gonic/gin"
+    log "github.com/sirupsen/logrus"
+    "github.com/spf13/viper"
+    "gitlab.p1staff.com/tsp/btree-backend/app/btree-backend-api/constant"
+    "gitlab.p1staff.com/tsp/btree-backend/app/btree-backend-api/middleware"
+    "@(packages.get("service"))"
+    "@(packages.get("controller"))"
+    "@(packages.get("dao"))"
+    "io"
+    "os"
+    "syscall"
+)
+
+var configFile string
+// 解析配置文件参数
+func parseFlags() {
+    flag.StringVar(&configFile, "config", "", "config file path")
+    flag.Parse()
+}
+
+// 处理配置
+func loadConfig() {
+    if configFile == "" || len(configFile) <= 0 {
+        log.Panicf("config file is required")
+    }
+    viper.SetConfigFile(configFile)
+    viper.SetDefault("app.port", 8080)
+    viper.SetDefault("log.level", "info")
+    viper.SetDefault("log.formatter", "JSONFormatter")
+    err := viper.ReadInConfig()
+    if err != nil {
+        log.Panicf("read config file error! file location: %s/%s. error: %+v", configFile, err)
+    }
+}
+
+// 初始化 logger
+func initLogger() {
+    // log level
+    logLevelString := viper.GetString("log.level")
+    logLevel, err := log.ParseLevel(logLevelString)
+    if err != nil {
+        log.Panicf("log level not correct! level: %s", err)
+    }
+    log.SetLevel(logLevel)
+    // log formatter
+    formatter := viper.GetString("log.formatter")
+    switch formatter {
+    case "TextFormatter":
+        log.SetFormatter(&log.TextFormatter{})
+    case "JSONFormatter":
+        log.SetFormatter(&log.JSONFormatter{})
+    default:
+        log.Panicf("log formatter not correct! level: %s", formatter)
+    }
+    // log output
+    var writers []io.Writer
+    output := viper.Get("log.output")
+    for _, out := range output.([]interface{}) {
+        var out = out.(map[interface{}]interface{})
+        if out["type"] == "stdout" {
+            writers = append(writers, os.Stdout)
+        }
+        if out["type"] == "stderr" {
+            writers = append(writers, os.Stderr)
+        }
+        if out["type"] == "file" {
+            file, err := os.OpenFile(out["path"].(string), os.O_CREATE|os.O_APPEND|os.O_RDWR, 0666)
+            if err != nil {
+                log.Panicf("can't open log file %+v", out["path"])
+            }
+            writers = append(writers, file)
+        }
+    }
+    log.SetOutput(io.MultiWriter(writers...))
+}
+
+// 连接数据库
+func createDBAccess() *@(daoPackage).DBAccess {
+    err := @(daoPackage).ConnectDB(
+        viper.GetString("db.host"),
+        viper.GetInt("db.port"),
+        viper.GetString("db.user"),
+        viper.GetString("db.password"),
+        viper.GetString("db.name"),
+    )
+    if err != nil {
+        log.Panicf("fail to connect to db, error: %+v", err)
+    }
+
+    dbAccess := @(daoPackage).CurrentDBAccess()
+    // 设置是否输出详细日志
+    dbAccess.DB().LogMode(viper.GetBool("db.logMode"))
+    // 替换为自定义的 logger
+    dbAccess.DB().SetLogger(log.StandardLogger())
+    return dbAccess
+}
+
+// 初始化 service
+func initService(dbAccess *@(daoPackage).DBAccess) *@(servicePackage).Service {
+    service := &@(servicePackage).Service{
+        DB:           dbAccess,
+        Logger:       log.StandardLogger(),
+    }
+    return service
+}
+
+// 初始化 controller
+func initController(service *@(servicePackage).Service) *controller.Controller {
+    return &controller.Controller{
+        Service: service,
+        Logger:  log.StandardLogger(),
+    }
+}
+
+// 初始化路由
+func setupRouters(controller *controller.Controller) *gin.Engine {
+    gin.DisableConsoleColor()
+    r := gin.Default()
+    // 记录接口访问日志的中间件
+    r.Use(middleware.Logger(log.StandardLogger()))
+    // 处理 panic 异常的中间件
+    r.Use(gin.RecoveryWithWriter(log.StandardLogger().WriterLevel(log.ErrorLevel)))
+    // 处理错误的中间件
+    r.Use(middleware.HandleErrors())
+    // ping
+    r.GET("/ping", func(c *gin.Context) {
+        c.JSON(200, gin.H{
+            "message": "pong",
+        })
+    })
+    // 接口
+    ajaxApi := r.Group("/ajax")
+    {
+        @for (table : tables) {
+        @with (modelName = NameTransfer.transferToCamelCase(table.getTableName()), urlName = NameTransfer.transferToVariableName(table.getTableName())) {
+        // @urlName
+        ajaxApi.GET("/@(urlName)s", @(controllerPackage).Get@(modelName)List)
+        ajaxApi.POST("/@(urlName)s", @(controllerPackage).Create@(modelName))
+        ajaxApi.DELETE("/@(urlName)s/:@(urlName)_id", @(controllerPackage).Delete@(modelName))
+        ajaxApi.PUT("/@(urlName)s/:@(urlName)_id", @(controllerPackage).Update@(modelName))
+        }
+        }
+    }
+
+    return r
+}
+
+func main() {
+    // 解析命令行参数
+    parseFlags()
+    // 加载配置文件
+    loadConfig()
+    // 初始化日志访问
+    initLogger()
+    // 初始化数据库
+    dbAccess := createDBAccess()
+    // 初始化 service 对象
+    service := initService(dbAccess)
+    controller := initController(service)
+    router := setupRouters(controller)
+    port := viper.GetInt("app.port")
+    server := endless.NewServer(fmt.Sprintf(":%d", port), router)
+    server.BeforeBegin = func(addr string) {
+        log.Infof("Listening on host: %s. Actual pid is %d", addr, syscall.Getpid())
+    }
+    server.RegisterOnShutdown(func() {
+        if err := dbAccess.DB().Close(); err != nil {
+            log.Error("close database connection failed when server shutdown!", err)
+        }
+    })
+    server.ListenAndServe()
+}

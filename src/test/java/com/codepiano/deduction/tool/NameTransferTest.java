@@ -10,6 +10,7 @@ public class NameTransferTest {
     @DataProvider
     public Object[][] transferData() {
         return new Object[][]{
+                {"TestCamelCase", "TestCamelCase"},
                 {"test_camel_case", "TestCamelCase"},
                 {"_test_camel_case_", "TestCamelCase"},
                 {"_test_camel_case_", "TestCamelCase"},

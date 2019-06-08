@@ -1,0 +1,20 @@
+@args(String packageName, String serviceFullPath, String servicePackageName)
+
+package @packageName
+
+import (
+    "github.com/gin-gonic/gin"
+    "github.com/sirupsen/logrus"
+    "@serviceFullPath"
+)
+
+type Controller struct {
+    Service *@(servicePackageName).Service
+    Logger  *logrus.Logger
+}
+
+type PaginationParam struct {
+    PageNum  int `form:"page_num,default=1"`
+    PageSize int `form:"page_size,default=10"`
+}
+

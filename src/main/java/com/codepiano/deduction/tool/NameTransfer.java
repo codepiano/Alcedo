@@ -14,4 +14,9 @@ public class NameTransfer {
             return x;
         });
     }
+
+    public static String transferToVariableName(String name) {
+        var camelCaseName = transferToCamelCase(name);
+        return Character.toLowerCase(camelCaseName.charAt(0)) + camelCaseName.substring(1);
+    }
 }

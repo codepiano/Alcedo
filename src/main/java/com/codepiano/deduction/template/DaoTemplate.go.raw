@@ -4,9 +4,9 @@
 @import com.codepiano.deduction.models.*
 @import java.util.*
 
-@args (String modelFullPath, String modelName, String variableName)
+@args (String modelFullPath, String modelName, String variableName, String packageName)
 
-package dal
+package @packageName
 
 import (
     "github.com/jinzhu/gorm"

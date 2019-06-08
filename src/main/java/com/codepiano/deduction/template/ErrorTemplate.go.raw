@@ -1,0 +1,40 @@
+@option discardLogicWhitespace=true
+
+@args (String packageName)
+
+package @packageName
+
+import (
+    "fmt"
+)
+
+const (
+    // success code
+    CodeSuccess int64 = 0
+    // error code
+    RequestParameterInvalid int64 = 40001
+    RequestDataExists       int64 = 40002
+    RequestDataNotExisted   int64 = 40003
+    InternalServerError     int64 = 50000
+)
+
+var codeMessageMap = map[int64]string{
+    RequestParameterInvalid: "request parameter is invalid",
+    RequestDataExists:       "request data already exists",
+    RequestDataNotExisted:   "request data does not exists",
+    InternalServerError:     "internal server error",
+}
+
+func GetErrorMessage(code int64) (string, bool) {
+    msg, ok := codeMessageMap[code]
+    return msg, ok
+}
+
+type Error struct {
+    Code     int64
+    Message  string
+}
+
+func (e *Error) Error() string {
+    return fmt.Sprintf("API Error: Code=%d, Message=%s", e.Code, e.Message)
+}

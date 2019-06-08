@@ -1,0 +1,21 @@
+@option discardLogicWhitespace=true
+
+@args (String host, int port, String user, String password, String name)
+
+app:
+  port: 8080
+
+db:
+  host: @host
+  port: @port
+  user: @user
+  password: @password
+  name: @name
+
+log:
+  level: info
+  formatter: TextFormatter
+  output:
+    - type: file
+      path: /tmp/app.log
+    - type: stdout

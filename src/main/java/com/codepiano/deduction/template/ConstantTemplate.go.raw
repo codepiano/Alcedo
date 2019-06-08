@@ -1,0 +1,10 @@
+@option discardLogicWhitespace=true
+
+@args (String constantPackage)
+
+package @constantPackage
+
+// see: https://www.postgresql.org/docs/10/errcodes-appendix.html
+const (
+    UNIQUE_VIOLATION = "unique_violation"
+)

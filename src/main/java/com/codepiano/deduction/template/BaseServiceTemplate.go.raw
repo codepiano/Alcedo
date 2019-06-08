@@ -1,0 +1,14 @@
+@args(String packageName, String daoFullPath, String daoPackageName)
+
+package @packageName
+
+import (
+    "github.com/sirupsen/logrus"
+    "@daoFullPath"
+)
+
+type Service struct {
+    DB           *@(daoPackageName).DBAccess
+    Logger       *logrus.Logger
+}
+

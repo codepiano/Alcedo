@@ -2,12 +2,35 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/test
     username: codepiano
-#    password: root
+    password:
 
 output:
-  package:
-    base: "gitlab.com/test/test/"
-  dir:
-    base: /Users/codepiano/deduction/
-    bean: /model/db/
-    dao: /dal/
+  api:
+    package:
+      base: gitlab.com/test/test
+      bean:
+        business: db
+        http: rest
+      dao: dal
+      service: service
+      controller: controller
+      error: error
+      constant: constant
+    dir:
+      base: /Users/codepiano/deduction
+      bean:
+        business: model/db
+        http: model/rest
+      dao: dal
+      service: service
+      controller: controller
+      error: error
+      constant: constant
+      config: config
+  cmd:
+    package:
+      base: gitlab.com/test/test
+      main: main
+    dir:
+      base: Users/codepiano/deduction
+      main: main

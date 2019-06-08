@@ -1,0 +1,135 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import java.util.*
+
+@args (Map<String, String> packages, String controllerPackage, String modelName, String variableName, String beanPackage, String errorPackage, String httpPackage)
+
+package @controllerPackage
+
+import (
+    "github.com/gin-gonic/gin"
+    "net/http"
+    "strconv"
+    "@(packages.get("service"))"
+    "@(packages.get("bean"))"
+    "@(packages.get("error"))"
+    "@(packages.get("http"))"
+)
+
+// 分页获取@(modelName)列表
+func (ctl *Controller) Get@(modelName)List(c *gin.Context) {
+    param := PaginationParam{}
+    if err := c.ShouldBindQuery(&param); err != nil {
+        c.Error(&@(errorPackage).Error{InnerErr: err, Code: @(errorPackage).RequestParameterInvalid})
+        return
+    }
+    @(variableName)List, count, err := ctl.Service.Get@(modelName)List(param.PageNum, param.PageSize)
+    if err != nil {
+        c.Error(err)
+        return
+    }
+
+    c.JSON(http.StatusOK, &@(httpPackage).BaseResp{
+        Meta: &@(httpPackage).Meta{
+            Code: @(errorPackage).CodeSuccess,
+        },
+        Data: struct {
+            @(modelName)s       []@(beanPackage).@(modelName) `json:"rows"`
+            TotalCount int          `json:"total_count"`
+        }{
+            @(modelName)s:       @(variableName)List,
+            TotalCount: count,
+        },
+    })
+}
+
+// 添加@(modelName)
+func (ctl *Controller) Create@(modelName)(c *gin.Context) {
+    param := @(beanPackage).@modelName{}
+    if err := c.ShouldBindJSON(&param); err != nil {
+        c.Error(&@(errorPackage).Error{InnerErr: err, Code: @(errorPackage).RequestParameterInvalid})
+        return
+    }
+    @(variableName), err := ctl.@(modelName).Create@(modelName)(&param)
+    if err != nil {
+        c.Error(err)
+        return
+    }
+    c.JSON(http.StatusOK, &@(httpPackage).BaseResp{
+        Meta: &@(httpPackage).Meta{
+            Code: @(errorPackage).CodeSuccess,
+        },
+        Data: struct {
+            @(modelName) *@(beanPackage).@(modelName) `json:"@variableName"`
+        }{
+            @(modelName): @(variableName),
+        },
+    })
+}
+
+// 更新@(modelName)
+func (ctl *Controller) Update@(modelName)(c *gin.Context) {
+    idString := c.Param("@(variableName)_id")
+    if idString == "" {
+        c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
+        return
+    }
+    id, err := strconv.ParseUint(idString, 10, 64)
+    if err != nil {
+        c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
+        return
+    }
+    param := @(beanPackage).@modelName{}
+    if err := c.ShouldBindJSON(&param); err != nil {
+        c.Error(&@(errorPackage).Error{InnerErr: err, Code: @(errorPackage).RequestParameterInvalid})
+        return
+    }
+    @(variableName), err := ctl.@(modelName).Update@(modelName)(id, &param)
+    if err != nil {
+        c.Error(err)
+        return
+    }
+
+    c.JSON(http.StatusOK, &@(httpPackage).BaseResp{
+        Meta: &@(httpPackage).Meta{
+            Code: @(errorPackage).CodeSuccess,
+        },
+        Data: struct {
+            @(modelName) *@(beanPackage).@(modelName)
+        }{
+            @(modelName): @(variableName),
+        },
+    })
+}
+
+// 删除@(modelName)
+func (ctl *Controller) Delete@(modelName)(c *gin.Context) {
+    idString := c.Param("@(variableName)_id")
+    if idString == "" {
+        c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
+        return
+    }
+    id, err := strconv.ParseUint(idString, 10, 64)
+    if err != nil {
+        c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
+        return
+    }
+    @(variableName), err := ctl.@(modelName).Delete@(modelName)(id)
+    if err != nil {
+        c.Error(err)
+        return
+    }
+    c.JSON(http.StatusOK, &@(httpPackage).BaseResp{
+        Meta: &@(httpPackage).Meta{
+            Code: @(errorPackage).CodeSuccess,
+        },
+        Data: struct {
+            @(modelName) *@(beanPackage).@(modelName)
+        }{
+            @(modelName): @(variableName),
+        },
+    })
+}
+

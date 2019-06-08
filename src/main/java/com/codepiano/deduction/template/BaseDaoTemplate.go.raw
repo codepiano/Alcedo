@@ -4,9 +4,9 @@
 @import com.codepiano.deduction.models.*
 @import java.util.*
 
-@args (List<TableDescription> tables)
+@args (List<TableDescription> tables, String packageName)
 
-package dal
+package @packageName
 
 import (
     "fmt"
