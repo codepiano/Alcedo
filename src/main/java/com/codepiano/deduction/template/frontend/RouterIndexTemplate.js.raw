@@ -1,0 +1,36 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import java.util.*
+
+@args (List<TableDescription> tables, String routerDir)
+
+import Vue from 'vue'
+import Router from 'vue-router'
+@for (table : tables) {
+import @NameTransfer.transferToCamelCase(table.getTableName()) from '@@/@routerDir/@NameTransfer.transferToKebabCase(table.getTableName())'
+}
+
+let routes = {
+    path: '/',
+    name: 'home',
+    component: Main,
+    children: [
+@for (table : tables) {
+        ...@NameTransfer.transferToCamelCase(table.getTableName()),
+}
+    ]
+}
+
+Vue.use(Router)
+const router = new Router({
+    routes,
+    base: process.env.NODE_ENV === 'production' ? '' : '',
+    mode: 'history'
+})
+
+router.beforeEach((to, from, next) => {
+})
+
+export default router

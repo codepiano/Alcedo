@@ -1,0 +1,32 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+
+@args (TableDescription table, String routerDir, String viewDir)
+
+import Main from '@@/views/main.vue'
+@with (modelName = NameTransfer.transferToCamelCase(table.getTableName()), variableName = NameTransfer.transferToVariableName(table.getTableName())) {
+// @variableName
+import @(modelName) from '@@/@viewDir/@(variableName).vue'
+import @(modelName)Edit from '@@/@viewDir/@(variableName)-edit.vue'
+import @(modelName)Add from '@@/@viewDir/@(variableName)-add.vue'
+
+export default [
+    {
+        path: '/@(variableName)s',
+        name: '@(variableName)s',
+        component: @(modelName),
+    },
+    {
+        path: '/@(variableName)s/:id(\\d+)',
+        name: '@(variableName)-edit',
+        component: @(modelName)Edit,
+    },
+    {
+        path: '/@(variableName)s/add',
+        name: '@(variableName)-add',
+        component: @(modelName)Add,
+    },
+]
+}

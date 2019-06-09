@@ -11,9 +11,9 @@ package @packageName
 @with (imports = typeTransfer.getImportTypes(columns)) {
     @if (!imports.isEmpty()) {
 import (
-    @for (importString : imports) {
+        @for (importString : imports) {
     @importString
-    }
+        }
 )
     }
 }
@@ -30,9 +30,9 @@ type @NameTransfer.transferToCamelCase(table.getTableName()) struct {
      * column size: @column.getColumnSize()?:"not applicable"
      * column remark: @column.getColumnName()?:"none"
      */
-    @with (primaryKeyTag = column.isPrimaryKey()? "gorm:\"primary_key\"":"") {
+        @with (primaryKeyTag = column.isPrimaryKey()? "gorm:\"primary_key\"":"") {
     @NameTransfer.transferToCamelCase(column.getColumnName()) @typeTransfer.transferToGoLangType(column) `json:"@column.getColumnName()" @primaryKeyTag`
-    }
+        }
 
     }
 }

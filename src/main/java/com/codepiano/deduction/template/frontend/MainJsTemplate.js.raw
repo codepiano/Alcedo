@@ -1,0 +1,25 @@
+@option discardLogicWhitespace=true
+
+@args (String routerDir, String storeDir, String configDir)
+
+import Vue from 'vue'
+import App from './App.vue'
+import router from '@@/@routerDir/index.js'
+import store from '@@/@storeDir/index.js'
+import config from '@@/@configDir/index.js'
+
+Vue.config.productionTip = false
+
+import ElementUI from 'element-ui';
+import 'element-ui/lib/theme-chalk/index.css';
+
+Vue.use(ElementUI);
+
+let vue = new Vue({
+    router,
+    store,
+    config,
+    render: h => h(App)
+})
+vue.$store.commit("setConfig", config)
+vue.$mount('#app')

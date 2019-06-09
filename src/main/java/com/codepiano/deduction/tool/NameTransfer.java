@@ -15,6 +15,10 @@ public class NameTransfer {
         });
     }
 
+    public static String transferToKebabCase(String name) {
+        return name.replaceAll("_", "-");
+    }
+
     public static String transferToVariableName(String name) {
         var camelCaseName = transferToCamelCase(name);
         return Character.toLowerCase(camelCaseName.charAt(0)) + camelCaseName.substring(1);
