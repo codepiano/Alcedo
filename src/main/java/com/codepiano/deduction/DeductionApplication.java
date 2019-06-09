@@ -17,6 +17,7 @@ import com.codepiano.deduction.template.backend.GoModTemplate;
 import com.codepiano.deduction.template.backend.MainTemplate;
 import com.codepiano.deduction.template.backend.ResponseModelTemplate;
 import com.codepiano.deduction.template.backend.ServiceTemplate;
+import com.codepiano.deduction.template.frontend.APITemplate;
 import com.codepiano.deduction.template.frontend.AppTemplate;
 import com.codepiano.deduction.template.frontend.MainJsTemplate;
 import com.codepiano.deduction.template.frontend.RouterIndexTemplate;
@@ -142,6 +143,9 @@ public class DeductionApplication {
     @Value("${frontend.dir.view}")
     private String frontendViewPath;
 
+    @Value("${frontend.dir.api}")
+    private String frontendAPIPath;
+
     @Autowired
     private TableService tableService;
 
@@ -261,13 +265,19 @@ public class DeductionApplication {
             FileUtils.forceMkdir(new File(frontendRouterDir));
             var frontendViewDir = frontendBasePath + File.separator + this.frontendRouterPath;
             FileUtils.forceMkdir(new File(frontendViewDir));
+            var frontendAPIDir = frontendBasePath + File.separator + this.frontendAPIPath;
+            FileUtils.forceMkdir(new File(frontendAPIDir));
             // frontend begin
             tables.forEach(tableDescription -> {
                 String router = RouterTemplate.template(tableDescription, this.frontendRouterPath, this.frontendViewPath)
                         .render()
                         .toString();
                 writeToJsFile(frontendRouterDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), router);
-                System.out.println(router);
+                String api = APITemplate.template(tableDescription)
+                        .render()
+                        .toString();
+                writeToJsFile(frontendAPIDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), api);
+                System.out.println(api);
             });
             String mainJs = MainJsTemplate.template(this.frontendRouterPath, this.frontendStorePath, this.frontendConfigPath)
                     .render()
@@ -281,7 +291,6 @@ public class DeductionApplication {
                     .render()
                     .toString();
             writeToJsFile(frontendRouterDir, "index", appVue);
-            System.out.println(routerIndex);
         };
     }
 

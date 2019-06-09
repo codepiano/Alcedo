@@ -42,3 +42,4 @@ frontend:
     router: router
     config: config
     view: view
+    api: api

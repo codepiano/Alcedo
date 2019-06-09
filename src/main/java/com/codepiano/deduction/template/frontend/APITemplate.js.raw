@@ -1,0 +1,52 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+
+@args (TableDescription table)
+
+import axios from 'axios'
+
+@with (modelName = NameTransfer.transferToCamelCase(table.getTableName()), variableName = NameTransfer.transferToVariableName(table.getTableName())) {
+/** get @variableName **/
+export const get@(modelName)s = () => {
+    return axios.request({
+        url: "/ajax/@(variableName)s",
+        method: 'get'
+    })
+}
+
+/** delete @variableName by id **/
+export const delete@(modelName) = (@(variableName)Id) => {
+    return axios.request({
+        url: `/ajax/@(variableName)s/${@(variableName)Id}`,
+        method: 'delete'
+    })
+}
+
+/** get @variableName by id **/
+export const get@(modelName)ById = (@(variableName)Id) => {
+    return axios.request({
+        url: `/ajax/@(variableName)s/${@(variableName)Id}`,
+        method: 'get'
+    })
+}
+
+/** edit @variableName by id **/
+export const edit@(modelName)ById = (@(variableName)Id, @(variableName)Param) => {
+    return axios.request({
+        url: `/ajax/@(variableName)s/${@(variableName)Id}`,
+        method: 'put',
+        data: @(variableName)Param
+    })
+}
+
+/** add @variableName **/
+export const add@(modelName) = (@(variableName)Param) => {
+    return axios.request({
+        url: '/ajax/@(variableName)s/',
+        method: 'post',
+        data: @(variableName)Param
+    })
+}
+}
