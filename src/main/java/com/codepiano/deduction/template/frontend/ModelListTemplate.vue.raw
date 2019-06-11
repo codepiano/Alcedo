@@ -1,0 +1,91 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import com.codepiano.deduction.constant.*
+@import java.util.*
+
+@args (TableDescription tableDescription, List<ColumnDescription> columns, TypeTransfer typeTransfer)
+
+@with (modelName = NameTransfer.transferToCamelCase(tableDescription.getTableName()), variableName = NameTransfer.transferToVariableName(tableDescription.getTableName())) {
+<template>
+    <div>
+        <h2>@modelName 列表</h2>
+        <el-button type="success" @@click="handleAdd">添加 @modelName</el-button>
+        <template>
+            <el-table
+                    :data="data"
+                    stripe
+                @for(column: columns) {
+                <el-table-column
+                    @if (typeTransfer.transferToGoLangType(column).equals(GoLangTypes.TIME)) {
+                    prop="@(NameTransfer.transferToVariableName(column.getColumnName()) + "String")"
+                    } else {
+                    prop="@NameTransfer.transferToVariableName(column.getColumnName())"
+                    }
+                    label="@NameTransfer.transferToVariableName(column.getColumnName())">
+                </el-table-column>
+                }
+                <el-table-column
+                        fixed="right"
+                        label="操作">
+                    <template slot-scope="scope">
+                        <el-button @@click="handleEdit(scope.row)" size="mini" type="primary">编 辑</el-button>
+                        <el-button @@click="handleDelete(scope.row)" size="mini" type="danger">删 除
+                        </el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+        </template>
+    </div>
+</template>
+
+<script>
+    import {get@(modelName)s, delete@(modelName)} from '@@/api/@tableDescription.getTableName()'
+    import dateFns from 'date-fns'
+
+    export default {
+        name: '@(modelName)',
+        mounted() {
+            get@(modelName)s().then(res => {
+                res = res.data
+                if (res.meta.code === 0) {
+                    let @(variableName)Rows = res.data.rows
+                    @(variableName)Rows.forEach((value) => {
+                        @for(column: columns) {
+                            @if (typeTransfer.transferToGoLangType(column).equals(GoLangTypes.TIME)) {
+                        value.@(NameTransfer.transferToVariableName(column.getColumnName())+"String") = dateFns.format(new Date(value.@NameTransfer.transferToVariableName(column.getColumnName())), "YYYY/MM/DD HH:mm:ss")
+                            }
+                        }
+                    })
+                }
+            })
+        },
+        methods: {
+            handleEdit(row) {
+                this.$router.push(
+                    {
+                        name: '@(variableName)-edit',
+                        params:
+                            {
+                                id: row.id
+                            }
+                    })
+            },
+            handleDelete(row) {
+                delete@(modelName)(row.id).then(res => {
+                    res = res.data
+                    if (res.meta.code === 0) {
+                    }
+                })
+            },
+            handleAdd() {
+                this.$router.push({name: '@(variableName)-add'})
+            }
+        },
+    }
+</script>
+
+<style scoped>
+</style>
+}

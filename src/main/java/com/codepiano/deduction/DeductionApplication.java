@@ -20,6 +20,8 @@ import com.codepiano.deduction.template.backend.ServiceTemplate;
 import com.codepiano.deduction.template.frontend.APITemplate;
 import com.codepiano.deduction.template.frontend.AppTemplate;
 import com.codepiano.deduction.template.frontend.MainJsTemplate;
+import com.codepiano.deduction.template.frontend.MainVueTemplate;
+import com.codepiano.deduction.template.frontend.ModelListTemplate;
 import com.codepiano.deduction.template.frontend.RouterIndexTemplate;
 import com.codepiano.deduction.template.frontend.RouterTemplate;
 import com.codepiano.deduction.tool.NameTransfer;
@@ -269,6 +271,7 @@ public class DeductionApplication {
             FileUtils.forceMkdir(new File(frontendAPIDir));
             // frontend begin
             tables.forEach(tableDescription -> {
+                List<ColumnDescription> columns = columnService.getAllColumnsInfoFromTable(tableDescription);
                 String router = RouterTemplate.template(tableDescription, this.frontendRouterPath, this.frontendViewPath)
                         .render()
                         .toString();
@@ -277,7 +280,10 @@ public class DeductionApplication {
                         .render()
                         .toString();
                 writeToJsFile(frontendAPIDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), api);
-                System.out.println(api);
+                String modelListPage = ModelListTemplate.template(tableDescription, columns, typeTransfer)
+                        .render()
+                        .toString();
+                writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelListPage);
             });
             String mainJs = MainJsTemplate.template(this.frontendRouterPath, this.frontendStorePath, this.frontendConfigPath)
                     .render()
@@ -290,7 +296,11 @@ public class DeductionApplication {
             String routerIndex = RouterIndexTemplate.template(tables, this.frontendRouterPath)
                     .render()
                     .toString();
-            writeToJsFile(frontendRouterDir, "index", appVue);
+            writeToJsFile(frontendRouterDir, "index", routerIndex);
+            String mainVue = MainVueTemplate.template(tables)
+                    .render()
+                    .toString();
+            writeToJsFile(frontendViewDir, "index", mainVue);
         };
     }
 

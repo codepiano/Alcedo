@@ -1,0 +1,47 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import java.util.*
+
+@args (List<TableDescription> tables)
+
+<template>
+    <el-container>
+        <el-header id="header">
+            <pageHead/>
+        </el-header>
+        <el-container>
+            <el-aside id="aside">
+                <el-menu :route="true">
+@for ((i, table) : tables) {
+                    <el-menu-item index="@(i.index()+1)" :route='{name:"@NameTransfer.transferToVariableName(table.getTableName())"}'>
+                      <i class="el-icon-menu"></i>
+                      <span slot="title">@table.getTableName()</span>
+                    </el-menu-item>
+}
+                </el-menu>
+            </el-aside>
+            <el-main>
+                <router-view></router-view>
+            </el-main>
+        </el-container>
+    </el-container>
+</template>
+
+<script>
+    import Vue from 'vue'
+    // 引入配置
+    import config from '@@/config'
+    import pageHead from '@@/views/page-head'
+
+    export default {
+        name: 'Main',
+        components: {
+            'pageHead': pageHead,
+        },
+    }
+</script>
+
+<style scoped>
+</style>
