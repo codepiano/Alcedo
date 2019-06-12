@@ -21,6 +21,7 @@ import com.codepiano.deduction.template.frontend.APITemplate;
 import com.codepiano.deduction.template.frontend.AppTemplate;
 import com.codepiano.deduction.template.frontend.MainJsTemplate;
 import com.codepiano.deduction.template.frontend.MainVueTemplate;
+import com.codepiano.deduction.template.frontend.ModelAddTemplate;
 import com.codepiano.deduction.template.frontend.ModelListTemplate;
 import com.codepiano.deduction.template.frontend.RouterIndexTemplate;
 import com.codepiano.deduction.template.frontend.RouterTemplate;
@@ -284,6 +285,11 @@ public class DeductionApplication {
                         .render()
                         .toString();
                 writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelListPage);
+                String modelAddPage = ModelAddTemplate.template(tableDescription, columns, typeTransfer)
+                        .render()
+                        .toString();
+                writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelAddPage);
+                System.out.println(modelAddPage);
             });
             String mainJs = MainJsTemplate.template(this.frontendRouterPath, this.frontendStorePath, this.frontendConfigPath)
                     .render()
