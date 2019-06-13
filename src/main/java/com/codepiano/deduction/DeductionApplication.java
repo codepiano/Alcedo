@@ -51,6 +51,7 @@ import java.sql.DatabaseMetaData;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -157,6 +158,8 @@ public class DeductionApplication {
 
     @Autowired
     private TypeTransfer typeTransfer;
+
+    private static final Set<String> ignore = Set.of("id", "created_at", "created_by", "updated_at", "updated_by", "deleted_at", "deleted_by");
 
     public static void main(String[] args) {
         SpringApplication.run(DeductionApplication.class, args);
@@ -285,7 +288,7 @@ public class DeductionApplication {
                         .render()
                         .toString();
                 writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelListPage);
-                String modelAddPage = ModelAddTemplate.template(tableDescription, columns, typeTransfer)
+                String modelAddPage = ModelAddTemplate.template(tableDescription, columns, typeTransfer, ignore)
                         .render()
                         .toString();
                 writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelAddPage);
