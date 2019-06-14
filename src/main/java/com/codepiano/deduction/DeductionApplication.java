@@ -200,7 +200,7 @@ public class DeductionApplication {
                         .toString();
                 writeToGoFile(businessModelDir, tableDescription.getTableName(), model);
                 // 生成 model 层代码
-                String dao = DaoTemplate.template(basePackage + businessBeanPath, modelName, variableName, daoPackage)
+                String dao = DaoTemplate.template(packagePath, modelName, variableName, daoPackage)
                         .render()
                         .toString();
                 writeToGoFile(daoDir, tableDescription.getTableName() + "_dao", dao);
@@ -216,7 +216,7 @@ public class DeductionApplication {
                 writeToGoFile(controllerDir, tableDescription.getTableName() + "_controller", controller);
             });
             // 生成响应体
-            String response = ResponseModelTemplate.template(httpModelDir)
+            String response = ResponseModelTemplate.template(httpBeanPath)
                     .render()
                     .toString();
             writeToGoFile(httpModelDir, "response", response);
@@ -231,7 +231,7 @@ public class DeductionApplication {
                     .toString();
             writeToGoFile(serviceDir, "service", baseService);
             // 生成 controller 对象代码
-            String baseController = BaseControllerTemplate.template(servicePackage, basePackage + File.separator + servicePackage, servicePackage)
+            String baseController = BaseControllerTemplate.template(controllerPackage, basePackage + File.separator + servicePackage, servicePackage)
                     .render()
                     .toString();
             writeToGoFile(controllerDir, "controller", baseController);
@@ -244,7 +244,7 @@ public class DeductionApplication {
             String constant = ConstantTemplate.template(constantPackage)
                     .render()
                     .toString();
-            writeToGoFile(errorDir, "error", error);
+            writeToGoFile(constantDir, "constant", constant);
             // 生成 main 代码
             String main = MainTemplate.template(packagePath, daoPackage, servicePackage, controllerPackage, tables)
                     .render()
