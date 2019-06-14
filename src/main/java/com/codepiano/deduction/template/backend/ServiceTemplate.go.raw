@@ -17,7 +17,7 @@ import (
     "@(packages.get("constant"))"
 )
 
-func (srv *Service) Get@(modelName)ByID(id int64) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Get@(modelName)ByID(id uint64) (*@(beanPackage).@(modelName), error) {
     @(variableName), err := srv.DB.@(modelName).GetById(id)
     if err != nil {
         if gorm.IsRecordNotFoundError(err) {
@@ -55,7 +55,7 @@ func (srv *Service) Create@(modelName)(@variableName *@(beanPackage).@(modelName
 }
 
 // 删除 @modelName
-func (srv *Service) Delete@(modelName)(id int64, deleteBy int64) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Delete@(modelName)(id uint64, deleteBy uint64) (*@(beanPackage).@(modelName), error) {
     // 获取 @modelName
     @(variableName), err := srv.Get@(modelName)ByID(id)
     if err != nil {

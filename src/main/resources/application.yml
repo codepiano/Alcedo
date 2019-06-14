@@ -1,43 +1,43 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/test
-    username: codepiano
+    url: jdbc:postgresql://localhost:5432/tsp_monitor
+    username: tsp_monitor
     password:
 
 backend:
   api:
     package:
-      base: gitlab.com/test/test
+      base: gitlab.p1staff.com/tsp/monitor-backend/app/monitor-backend-ajaxapi
       bean:
         business: db
         http: rest
       dao: dal
       service: service
       controller: controller
-      error: error
+      error: rest
       constant: constant
     dir:
-      base: /Users/codepiano/deduction
+      base: /Users/lishouyu/deduction
       bean:
         business: model/db
         http: model/rest
       dao: dal
       service: service
       controller: controller
-      error: error
+      error: model/rest
       constant: constant
       config: config
   cmd:
     package:
-      base: gitlab.com/test/test
+      base: gitlab.p1staff.com/tsp/monitor-backend
       main: main
     dir:
-      base: /Users/codepiano/deduction
+      base: /Users/lishouyu/deduction
       main: main
 
 frontend:
   dir:
-    base: /Users/codepiano/deduction-web
+    base: /Users/lishouyu/deduction-web
     store: store
     router: router
     config: config
