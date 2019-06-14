@@ -149,6 +149,7 @@ func setupRouters(controller *controller.Controller) *gin.Engine {
         @with (modelName = NameTransfer.transferToCamelCase(table.getTableName()), urlName = NameTransfer.transferToVariableName(table.getTableName())) {
         // @urlName
         ajaxApi.GET("/@(urlName)s", @(controllerPackage).Get@(modelName)List)
+        ajaxApi.GET("/@(urlName)s/:@(urlName)_id", @(controllerPackage).Get@(modelName)ById)
         ajaxApi.POST("/@(urlName)s", @(controllerPackage).Create@(modelName))
         ajaxApi.DELETE("/@(urlName)s/:@(urlName)_id", @(controllerPackage).Delete@(modelName))
         ajaxApi.PUT("/@(urlName)s/:@(urlName)_id", @(controllerPackage).Update@(modelName))
