@@ -5,8 +5,7 @@
 package @packageName
 
 import (
-    "fmt"
-    "http"
+    "net/http"
 )
 
 // Meta is response meta
@@ -25,7 +24,7 @@ func SuccessResp(data interface{}) *BaseResp {
     return &BaseResp{
         Meta: &Meta{
             Code:    http.StatusOK,
-            Message: http.StatusText[http.StatusOK],
+            Message: http.StatusText(http.StatusOK),
         },
         Data: data,
     }

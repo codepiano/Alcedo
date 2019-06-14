@@ -12,7 +12,7 @@ package @packageName
     @if (!imports.isEmpty()) {
 import (
         @for (importString : imports) {
-    @importString
+    "@importString"
         }
 )
     }

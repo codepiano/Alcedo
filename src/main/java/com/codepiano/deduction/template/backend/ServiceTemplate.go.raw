@@ -17,14 +17,14 @@ import (
     "@(packages.get("constant"))"
 )
 
-func (srv *Service) Get@(modelName)ByID(id uint64) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Get@(modelName)ByID(id int64) (*@(beanPackage).@(modelName), error) {
     @(variableName), err := srv.DB.@(modelName).GetById(id)
     if err != nil {
         if gorm.IsRecordNotFoundError(err) {
             return nil, &@(errorPackage).Error{Code: @(errorPackage).RequestDataNotExisted}
         }
         srv.Logger.Errorf("db error occurred when querying service! %+v", err)
-        return nil, &@(errorPackage).Error{Code: @(errorPackage).InternalServiceError}
+        return nil, &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
     }
     return @(variableName), nil
 }
@@ -34,7 +34,7 @@ func (srv *Service) Get@(modelName)List(pageNum, pageSize int) ([]@(beanPackage)
     @(variableName)List, count, err := srv.DB.@(modelName).List(pageNum, pageSize)
     if err != nil {
         srv.Logger.Errorf("db error occurred when querying @(variableName)! %+v", err)
-        return nil, 0, &@(errorPackage).Error{Code: @(errorPackage).InternalServiceError}
+        return nil, 0, &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
     }
     return @(variableName)List, count, nil
 }
@@ -49,38 +49,38 @@ func (srv *Service) Create@(modelName)(@variableName *@(beanPackage).@(modelName
             }
         }
         srv.Logger.Errorf("db error occurred when creating %+v! error: %+v", @(variableName), err)
-        return nil, &@(errorPackage).Error{Code: @(errorPackage).InternalServiceError}
+        return nil, &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
     }
     return @(variableName), nil
 }
 
 // 删除 @modelName
-func (srv *Service) Delete@(modelName)(id uint64) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Delete@(modelName)(id int64, deleteBy int64) (*@(beanPackage).@(modelName), error) {
     // 获取 @modelName
     @(variableName), err := srv.Get@(modelName)ByID(id)
     if err != nil {
         return nil, err
     }
-    @(variableName), err = srv.DB.@(modelName).Delete(id, user.ID)
+    @(variableName), err = srv.DB.@(modelName).Delete(id, deleteBy)
     if err != nil {
         if gorm.IsRecordNotFoundError(err) {
             return nil, &@(errorPackage).Error{Code: @(errorPackage).RequestDataNotExisted}
         }
         srv.Logger.Errorf("db error occurred when deleting @(variableName)! id: %d, error: %+v", id, err)
-        return nil, &@(errorPackage).Error{Code: @(errorPackage).InternalServiceError}
+        return nil, &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
     }
     return @(variableName), nil
 }
 
 // 更新 @modelName
 func (srv *Service) Update@(modelName)(@(variableName) *@(beanPackage).@(modelName)) (*@(beanPackage).@(modelName), error) {
-    err = srv.DB.@(modelName).Update(@(variableName))
+    err := srv.DB.@(modelName).Update(@(variableName))
     if err != nil {
         if gorm.IsRecordNotFoundError(err) {
             return nil, &@(errorPackage).Error{Code: @(errorPackage).RequestDataNotExisted}
         }
         srv.Logger.Errorf("db error occurred when updating @(variableName)! error: %+v", err)
-        return nil, &@(errorPackage).Error{Code: @(errorPackage).InternalServiceError}
+        return nil, &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
     }
     return @(variableName), nil
 }

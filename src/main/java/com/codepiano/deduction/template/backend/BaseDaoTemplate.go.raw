@@ -19,9 +19,9 @@ var stdDBAccess *DBAccess
 type DBAccess struct {
     db            *gorm.DB
     @for (table : tables) {
-    @with (name = NameTransfer.transferToCamelCase(table.getTableName())) {
-    @(name)Name           *@(name)DBAccess
-    }
+        @with (name = NameTransfer.transferToCamelCase(table.getTableName())) {
+    @(name)           *@(name)DBAccess
+        }
     }
 }
 
@@ -48,11 +48,11 @@ func ConnectDB(ip string, port int, username string, password string, dbname str
     stdDBAccess = &DBAccess{
         db: db,
         @for (table : tables) {
-        @with (name = NameTransfer.transferToCamelCase(table.getTableName())) {
+            @with (name = NameTransfer.transferToCamelCase(table.getTableName())) {
         @(name): &@(name)DBAccess{
             db: db,
         },
-        }
+            }
         }
     }
 

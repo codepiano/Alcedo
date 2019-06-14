@@ -3,7 +3,7 @@ package com.codepiano.deduction.constant;
 public class GoLangTypes {
     public static final String BOOL = "bool";
     public static final String STRING = "string";
-    public static final String INT = "Int";
+    public static final String INT = "int";
     public static final String INT8 = "int8";
     public static final String INT16 = "int16";
     public static final String INT32 = "int32";
