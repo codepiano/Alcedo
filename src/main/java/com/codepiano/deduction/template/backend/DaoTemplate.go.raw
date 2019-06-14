@@ -54,7 +54,7 @@ func (@(variableName)DB *@(modelName)DBAccess) Create(@(variableName) *db.@(mode
 }
 
 // 删除@(modelName)
-func (@(variableName)DB *@(modelName)DBAccess) Delete(id int64, deleteBy int64) (*db.@(modelName), error) {
+func (@(variableName)DB *@(modelName)DBAccess) Delete(id uint64, deleteBy uint64) (*db.@(modelName), error) {
     // 查询
     @(variableName), err := @(variableName)DB.GetById(id)
     if err != nil {
@@ -75,7 +75,7 @@ func (@(variableName)DB *@(modelName)DBAccess) Delete(id int64, deleteBy int64) 
 }
 
 // 通过 id 查询@(modelName)
-func (@(variableName)DB *@(modelName)DBAccess) GetById(id int64) (*db.@(modelName), error) {
+func (@(variableName)DB *@(modelName)DBAccess) GetById(id uint64) (*db.@(modelName), error) {
     @(variableName) := &db.@(modelName){}
     err := @(variableName)DB.db.First(@(variableName), id).Error
     if err != nil {
