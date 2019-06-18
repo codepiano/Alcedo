@@ -16,6 +16,7 @@ backend:
       controller: controller
       error: rest
       constant: constant
+      common: common
     dir:
       base: /Users/lishouyu/deduction
       bean:
@@ -27,6 +28,7 @@ backend:
       error: model/rest
       constant: constant
       config: config
+      common: model/common
   cmd:
     package:
       base: gitlab.p1staff.com/tsp/monitor-backend

@@ -8,10 +8,12 @@ import com.codepiano.deduction.models.TypeDescription;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.io.File;
 import java.sql.DatabaseMetaData;
 import java.sql.JDBCType;
 import java.sql.ResultSet;
@@ -58,6 +60,11 @@ public class TypeTransfer {
     @Autowired
     private DatabaseMetaData databaseMetaData;
 
+    @Value("${backend.api.package.base}")
+    private String basePackage;
+
+    @Value("${backend.api.dir.common}")
+    private String commonPath;
 
     @PostConstruct
     private void init() {
@@ -140,7 +147,7 @@ public class TypeTransfer {
         // 初始化数据库类型和 jdbc 类型的对应关系
         this.initRelationMap();
         // 初始化 golang 类型和 import 的对应关系
-        golangTypeImport.put("time.Time", "time");
+        golangTypeImport.put(GoLangTypes.TIME, basePackage + File.separator + commonPath);
         golangTypeImport.put(GOLANG_ARRAY_TYPE_DECLARE, "github.com/lib/pq");
         // 初始化 golang 类型和 pq array 包装类的关系
         golangTypeTopqTypeRelation.put("int", "pq.Int64Array");
