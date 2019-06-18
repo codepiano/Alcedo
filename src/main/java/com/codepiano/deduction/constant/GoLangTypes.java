@@ -32,7 +32,7 @@ public class GoLangTypes {
      */
     public static final String BYTES = "[]byte";
     /**
-     * 日期
+     * 日期，使用非 rfc3339 的日期
      */
-    public static final String TIME = "time.Time";
+    public static final String TIME = "common.Time";
 }

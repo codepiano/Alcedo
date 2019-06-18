@@ -8,6 +8,7 @@ import com.codepiano.deduction.template.backend.BaseControllerTemplate;
 import com.codepiano.deduction.template.backend.BaseDaoTemplate;
 import com.codepiano.deduction.template.backend.BaseServiceTemplate;
 import com.codepiano.deduction.template.backend.BeanTemplate;
+import com.codepiano.deduction.template.backend.CommonTimeTemplate;
 import com.codepiano.deduction.template.backend.ConfigTemplate;
 import com.codepiano.deduction.template.backend.ConstantTemplate;
 import com.codepiano.deduction.template.backend.ControllerTemplate;
@@ -132,6 +133,12 @@ public class DeductionApplication {
     @Value("${backend.cmd.package.main}")
     private String cmdMainPackage;
 
+    @Value("${backend.api.dir.common}")
+    private String commonPath;
+
+    @Value("${backend.api.package.common}")
+    private String commonPackage;
+
     @Value("${frontend.dir.base}")
     private String frontendBasePath;
 
@@ -187,6 +194,8 @@ public class DeductionApplication {
             FileUtils.forceMkdir(new File(cmdMainDir));
             var constantDir = apiBasePath + File.separator + constantPath;
             FileUtils.forceMkdir(new File(constantDir));
+            var commonDir = apiBasePath + File.separator + commonPath;
+            FileUtils.forceMkdir(new File(commonDir));
             // backend begin
             List<TableDescription> tables = tableService.getAllTablesInCatalog(catalog);
             var packagePath = packagePath();
@@ -241,10 +250,10 @@ public class DeductionApplication {
                     .toString();
             writeToGoFile(errorDir, "error", error);
             // 生成常量定义
-            String constant = ConstantTemplate.template(constantPackage)
+            String common = CommonTimeTemplate.template(commonPackage)
                     .render()
                     .toString();
-            writeToGoFile(constantDir, "constant", constant);
+            writeToGoFile(commonDir, "common", common);
             // 生成 main 代码
             String main = MainTemplate.template(packagePath, daoPackage, servicePackage, controllerPackage, tables)
                     .render()
@@ -322,6 +331,7 @@ public class DeductionApplication {
         packages.put("error", basePackage + File.separator + errorPath);
         packages.put("http", basePackage + File.separator + httpBeanPath);
         packages.put("constant", basePackage + File.separator + constantPath);
+        packages.put("common", basePackage + File.separator + commonPath);
         return packages;
     }
 
