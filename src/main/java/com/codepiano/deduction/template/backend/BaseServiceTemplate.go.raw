@@ -4,6 +4,7 @@ package @packageName
 
 import (
     "github.com/sirupsen/logrus"
+    "github.com/jinzhu/gorm"
     "@daoFullPath"
 )
 
@@ -12,3 +13,30 @@ type Service struct {
     Logger       *logrus.Logger
 }
 
+type InTransaction func(tx *gorm.DB) error
+
+func (srv Service) RunInTransaction(fn InTransaction) error {
+	tx := srv.DB.BeginTransaction()
+	if tx.Error != nil {
+		srv.Logger.Errorf("error occurred when begin transaction: %+v", tx.Error)
+		return &rest.Error{Code: rest.InternalServerError}
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	err := fn(tx)
+	if err != nil {
+		txErr := tx.Rollback().Error
+		if txErr != nil {
+			srv.Logger.Errorf("error occurred when rollback transaction: %+v", txErr)
+		}
+		return err
+	}
+	if err = tx.Commit().Error; err != nil {
+		srv.Logger.Errorf("error occurred when commit transaction: %+v", err)
+		return &rest.Error{Code: rest.InternalServerError}
+	}
+	return nil
+}
