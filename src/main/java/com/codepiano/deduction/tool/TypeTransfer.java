@@ -73,7 +73,7 @@ public class TypeTransfer {
         typeTranslation.put(Types.TINYINT, columnDescription -> GoLangTypes.INT);
         typeTranslation.put(Types.SMALLINT, columnDescription -> GoLangTypes.INT);
         typeTranslation.put(Types.INTEGER, columnDescription -> GoLangTypes.INT);
-        typeTranslation.put(Types.BIGINT, columnDescription -> GoLangTypes.INT64);
+        typeTranslation.put(Types.BIGINT, columnDescription -> GoLangTypes.UINT64);
         typeTranslation.put(Types.FLOAT, columnDescription -> GoLangTypes.FLOAT64);
         typeTranslation.put(Types.REAL, columnDescription -> GoLangTypes.FLOAT64);
         typeTranslation.put(Types.DOUBLE, columnDescription -> GoLangTypes.FLOAT64);
