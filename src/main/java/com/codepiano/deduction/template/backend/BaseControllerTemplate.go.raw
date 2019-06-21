@@ -18,3 +18,14 @@ type PaginationParam struct {
     PageSize int `form:"page_size,default=10"`
 }
 
+const LoginUserInContext string = "loginUser" // 上下文中用户对象关联的的 key
+
+func (ctl *Controller) GetLoginUser(c *gin.Context) *rest.LoginUser {
+	if v, exists := c.Get(constant.LoginUserInContext); exists {
+		user := v.(*rest.LoginUser)
+		return user
+	}
+
+	ctl.Logger.Panicf("there is no login user in gin.Context")
+	return nil
+}
