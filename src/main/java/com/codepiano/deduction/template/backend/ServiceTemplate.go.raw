@@ -15,6 +15,7 @@ import (
     "@(packages.get("bean"))"
     "@(packages.get("error"))"
     "@(packages.get("constant"))"
+    "@(packages.get("common"))"
 )
 
 func (srv *Service) Get@(modelName)ByID(id uint64, tx *gorm.DB) (*@(beanPackage).@(modelName), error) {
@@ -40,7 +41,12 @@ func (srv *Service) Get@(modelName)List(pageNum, pageSize int) ([]@(beanPackage)
 }
 
 // 创建 @modelName
-func (srv *Service) Create@(modelName)(@variableName *@(beanPackage).@(modelName)) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Create@(modelName)(@variableName *@(beanPackage).@(modelName), user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
+    now := common.Time(time.Now())
+    @(variableName).CreatedBy = user.ID,
+    @(variableName).CreatedAt = now,
+    @(variableName).UpdatedBy = user.ID,
+    @(variableName).UpdatedAt = now,
     err := srv.DB.@(modelName).Create(@(variableName))
     if err != nil {
         if pgErr, ok := err.(*pq.Error); ok {
@@ -55,7 +61,7 @@ func (srv *Service) Create@(modelName)(@variableName *@(beanPackage).@(modelName
 }
 
 // 删除 @modelName
-func (srv *Service) Delete@(modelName)(id uint64, deleteBy uint64) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Delete@(modelName)(id uint64, deleteBy user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
     var @(variableName) *db.@(modelName)
     err := srv.RunInTransaction(func(tx *gorm.DB) error {
         // 获取 @modelName
@@ -81,14 +87,14 @@ func (srv *Service) Delete@(modelName)(id uint64, deleteBy uint64) (*@(beanPacka
 
 // 更新 @modelName
 func (srv *Service) Update@(modelName)(id uint64, @(variableName) *@(beanPackage).@(modelName), user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
-	@(variableName), err := srv.DB.@(modelName).GetById(id, nil)
-	if err != nil {
-		if gorm.IsRecordNotFoundError(err) {
-			return nil, &rest.Error{Code: rest.RequestDataNotExisted}
-		}
-		srv.Logger.Errorf("db error when update @modelName info instance! error: %+v", err)
-		return nil, &rest.Error{Code: rest.InternalServerError}
-	}
+    @(variableName), err := srv.DB.@(modelName).GetById(id, nil)
+    if err != nil {
+        if gorm.IsRecordNotFoundError(err) {
+            return nil, &rest.Error{Code: rest.RequestDataNotExisted}
+        }
+        srv.Logger.Errorf("db error when update @modelName info instance! error: %+v", err)
+        return nil, &rest.Error{Code: rest.InternalServerError}
+    }
     err = srv.DB.@(modelName).Update(@(variableName), user.ID, nil)
     if err != nil {
         if gorm.IsRecordNotFoundError(err) {

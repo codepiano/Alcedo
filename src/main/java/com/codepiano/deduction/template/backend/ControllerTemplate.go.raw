@@ -57,7 +57,7 @@ func (ctl *Controller) Get@(modelName)ById(c *gin.Context) {
 		c.Error(&rest.Error{Code: rest.RequestParameterInvalid})
 		return
 	}
-	@(variableName), err := ctl.Service.Get@(modelName)ByID(id)
+	@(variableName), err := ctl.Service.Get@(modelName)ByID(id, nil)
 	if err != nil {
 		c.Error(&rest.Error{Code: rest.RequestDataNotExisted})
 		return
@@ -81,7 +81,8 @@ func (ctl *Controller) Create@(modelName)(c *gin.Context) {
         c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
         return
     }
-    @(variableName), err := ctl.Service.Create@(modelName)(&param)
+    user := ctl.GetLoginUser(c)
+    @(variableName), err := ctl.Service.Create@(modelName)(&param, user)
     if err != nil {
         c.Error(err)
         return
@@ -115,7 +116,8 @@ func (ctl *Controller) Update@(modelName)(c *gin.Context) {
         c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
         return
     }
-    @(variableName), err := ctl.Service.Update@(modelName)(id, &param)
+    user := ctl.GetLoginUser(c)
+    @(variableName), err := ctl.Service.Update@(modelName)(id, &param, user)
     if err != nil {
         c.Error(err)
         return
@@ -145,7 +147,8 @@ func (ctl *Controller) Delete@(modelName)(c *gin.Context) {
         c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
         return
     }
-    @(variableName), err := ctl.Service.Delete@(modelName)(id)
+    user := ctl.GetLoginUser(c)
+    @(variableName), err := ctl.Service.Delete@(modelName)(id, user)
     if err != nil {
         c.Error(err)
         return
