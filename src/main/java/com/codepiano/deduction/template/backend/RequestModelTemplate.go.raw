@@ -1,0 +1,24 @@
+@import com.codepiano.deduction.service.ColumnService;
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import java.util.*
+
+@option discardLogicWhitespace=true
+
+@args (String packageName, List<TableDescription> tables, ColumnService columnService, TypeTransfer typeTransfer, Set<String> excludes)
+
+package @packageName
+
+@for (table : tables) {
+    @with (modelName = NameTransfer.transferToCamelCase(table.getTableName()), columns = columnService.getAllColumnsInfoFromTable(table)) {
+
+type @(modelName)Param struct {
+        @for (column : columns) {
+            @if(!excludes.contains(column.getColumnName())) {
+    @NameTransfer.transferToCamelCase(column.getColumnName()) @typeTransfer.transferToGoLangType(column) `json:"@column.getColumnName()"`
+            }
+        }
+}
+    }
+}
+
