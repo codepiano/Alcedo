@@ -4,28 +4,8 @@ import com.codepiano.deduction.models.ColumnDescription;
 import com.codepiano.deduction.models.TableDescription;
 import com.codepiano.deduction.service.ColumnService;
 import com.codepiano.deduction.service.TableService;
-import com.codepiano.deduction.template.backend.BaseControllerTemplate;
-import com.codepiano.deduction.template.backend.BaseDaoTemplate;
-import com.codepiano.deduction.template.backend.BaseServiceTemplate;
-import com.codepiano.deduction.template.backend.BeanTemplate;
-import com.codepiano.deduction.template.backend.CommonTimeTemplate;
-import com.codepiano.deduction.template.backend.ConfigTemplate;
-import com.codepiano.deduction.template.backend.ConstantTemplate;
-import com.codepiano.deduction.template.backend.ControllerTemplate;
-import com.codepiano.deduction.template.backend.DaoTemplate;
-import com.codepiano.deduction.template.backend.ErrorTemplate;
-import com.codepiano.deduction.template.backend.GoModTemplate;
-import com.codepiano.deduction.template.backend.MainTemplate;
-import com.codepiano.deduction.template.backend.ResponseModelTemplate;
-import com.codepiano.deduction.template.backend.ServiceTemplate;
-import com.codepiano.deduction.template.frontend.APITemplate;
-import com.codepiano.deduction.template.frontend.AppTemplate;
-import com.codepiano.deduction.template.frontend.MainJsTemplate;
-import com.codepiano.deduction.template.frontend.MainVueTemplate;
-import com.codepiano.deduction.template.frontend.ModelAddTemplate;
-import com.codepiano.deduction.template.frontend.ModelListTemplate;
-import com.codepiano.deduction.template.frontend.RouterIndexTemplate;
-import com.codepiano.deduction.template.frontend.RouterTemplate;
+import com.codepiano.deduction.template.backend.*;
+import com.codepiano.deduction.template.frontend.*;
 import com.codepiano.deduction.tool.NameTransfer;
 import com.codepiano.deduction.tool.TypeTransfer;
 import lombok.extern.slf4j.Slf4j;
@@ -214,7 +194,7 @@ public class DeductionApplication {
                         .toString();
                 writeToGoFile(daoDir, tableDescription.getTableName() + "_dao", dao);
                 // 生成 service 代码
-                String service = ServiceTemplate.template(packagePath, servicePackage, modelName, variableName, businessBeanPackage, errorPackage)
+                String service = ServiceTemplate.template(packagePath, servicePackage, modelName, variableName, businessBeanPackage, errorPackage, httpBeanPackage, columns, ignore)
                         .render()
                         .toString();
                 writeToGoFile(serviceDir, tableDescription.getTableName() + "_service", service);
@@ -224,8 +204,14 @@ public class DeductionApplication {
                         .toString();
                 writeToGoFile(controllerDir, tableDescription.getTableName() + "_controller", controller);
             });
+            // 生成请求参数
+            String request = RequestModelTemplate.template(httpBeanPackage, tables, columnService, typeTransfer, ignore)
+                    .render()
+                    .toString();
+            writeToGoFile(httpModelDir, "request", request);
+            System.out.println(request);
             // 生成响应体
-            String response = ResponseModelTemplate.template(httpBeanPath)
+            String response = ResponseModelTemplate.template(httpBeanPackage)
                     .render()
                     .toString();
             writeToGoFile(httpModelDir, "response", response);
@@ -301,7 +287,6 @@ public class DeductionApplication {
                         .render()
                         .toString();
                 writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelAddPage);
-                System.out.println(modelAddPage);
             });
             String mainJs = MainJsTemplate.template(this.frontendRouterPath, this.frontendStorePath, this.frontendConfigPath)
                     .render()

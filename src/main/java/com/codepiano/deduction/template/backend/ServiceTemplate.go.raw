@@ -4,11 +4,12 @@
 @import com.codepiano.deduction.models.*
 @import java.util.*
 
-@args (Map<String, String> packages, String servicePackage, String modelName, String variableName, String beanPackage, String errorPackage)
+@args (Map<String, String> packages, String servicePackage, String modelName, String variableName, String beanPackage, String errorPackage, String httpPackage, List<ColumnDescription> columns, Set<String> excludes)
 
 package @servicePackage
 
 import (
+    "time"
     "github.com/jinzhu/gorm"
     "github.com/lib/pq"
     "@(packages.get("dao"))"
@@ -41,7 +42,13 @@ func (srv *Service) Get@(modelName)List(pageNum, pageSize int) ([]@(beanPackage)
 }
 
 // 创建 @modelName
-func (srv *Service) Create@(modelName)(@variableName *@(beanPackage).@(modelName), user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Create@(modelName)(param *@(httpPackage).@(modelName)Param, user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
+    @(variableName) := &@(beanPackage).@(modelName){}
+    @for (column : columns) {
+        @if(!excludes.contains(column.getColumnName())) {
+    @(variableName).@NameTransfer.transferToCamelCase(column.getColumnName()) = param.@NameTransfer.transferToCamelCase(column.getColumnName())
+        }
+    }
     now := common.Time(time.Now())
     @(variableName).CreatedBy = user.ID
     @(variableName).CreatedAt = now
@@ -62,7 +69,7 @@ func (srv *Service) Create@(modelName)(@variableName *@(beanPackage).@(modelName
 
 // 删除 @modelName
 func (srv *Service) Delete@(modelName)(id uint64, deleteBy uint64) (*@(beanPackage).@(modelName), error) {
-    var @(variableName) *db.@(modelName)
+    var @(variableName) *@(beanPackage).@(modelName)
     err := srv.RunInTransaction(func(tx *gorm.DB) error {
         // 获取 @modelName
         _, err := srv.Get@(modelName)ByID(id, tx)
@@ -86,7 +93,7 @@ func (srv *Service) Delete@(modelName)(id uint64, deleteBy uint64) (*@(beanPacka
 }
 
 // 更新 @modelName
-func (srv *Service) Update@(modelName)(id uint64, @(variableName) *@(beanPackage).@(modelName), user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Update@(modelName)(id uint64, param *@(httpPackage).@(modelName)Param, user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
     @(variableName), err := srv.DB.@(modelName).GetById(id, nil)
     if err != nil {
         if gorm.IsRecordNotFoundError(err) {

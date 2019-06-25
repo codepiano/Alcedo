@@ -9,6 +9,7 @@
 package @packageName
 
 import (
+    "time"
     "github.com/jinzhu/gorm"
     "@(packages.get("bean"))"
     "@(packages.get("common"))"

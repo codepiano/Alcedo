@@ -31,7 +31,11 @@ type @NameTransfer.transferToCamelCase(table.getTableName()) struct {
      * column remark: @column.getColumnName()?:"none"
      */
         @with (primaryKeyTag = column.isPrimaryKey()? "gorm:\"primary_key\"":"") {
+            @if ("deleted_at".equals(column.getColumnName())) {
     @NameTransfer.transferToCamelCase(column.getColumnName()) @typeTransfer.transferToGoLangType(column) `json:"@column.getColumnName()" @primaryKeyTag`
+            } else {
+    @NameTransfer.transferToCamelCase(column.getColumnName()) @typeTransfer.transferToGoLangType(column) `json:"@column.getColumnName()" @primaryKeyTag`
+            }
         }
 
     }
