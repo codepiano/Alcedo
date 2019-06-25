@@ -76,7 +76,7 @@ func (ctl *Controller) Get@(modelName)ById(c *gin.Context) {
 
 // 添加@(modelName)
 func (ctl *Controller) Create@(modelName)(c *gin.Context) {
-    param := @(beanPackage).@modelName{}
+    var param @(beanPackage).@modelName
     if err := c.ShouldBindJSON(&param); err != nil {
         c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
         return
@@ -111,7 +111,7 @@ func (ctl *Controller) Update@(modelName)(c *gin.Context) {
         c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
         return
     }
-    param := @(beanPackage).@modelName{}
+    var param @(beanPackage).@modelName
     if err := c.ShouldBindJSON(&param); err != nil {
         c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
         return

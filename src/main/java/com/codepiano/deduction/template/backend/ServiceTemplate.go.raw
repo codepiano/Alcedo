@@ -43,10 +43,10 @@ func (srv *Service) Get@(modelName)List(pageNum, pageSize int) ([]@(beanPackage)
 // 创建 @modelName
 func (srv *Service) Create@(modelName)(@variableName *@(beanPackage).@(modelName), user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
     now := common.Time(time.Now())
-    @(variableName).CreatedBy = user.ID,
-    @(variableName).CreatedAt = now,
-    @(variableName).UpdatedBy = user.ID,
-    @(variableName).UpdatedAt = now,
+    @(variableName).CreatedBy = user.ID
+    @(variableName).CreatedAt = now
+    @(variableName).UpdatedBy = user.ID
+    @(variableName).UpdatedAt = now
     err := srv.DB.@(modelName).Create(@(variableName))
     if err != nil {
         if pgErr, ok := err.(*pq.Error); ok {
@@ -61,7 +61,7 @@ func (srv *Service) Create@(modelName)(@variableName *@(beanPackage).@(modelName
 }
 
 // 删除 @modelName
-func (srv *Service) Delete@(modelName)(id uint64, deleteBy user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Delete@(modelName)(id uint64, deleteBy uint64) (*@(beanPackage).@(modelName), error) {
     var @(variableName) *db.@(modelName)
     err := srv.RunInTransaction(func(tx *gorm.DB) error {
         // 获取 @modelName
