@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/tsp_monitor
+    url: jdbc:postgresql://localhost:5432/tsp_monitor_g
     username: tsp_monitor
     password:
 
