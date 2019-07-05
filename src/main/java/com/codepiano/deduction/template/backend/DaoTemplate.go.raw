@@ -20,13 +20,17 @@ type @(modelName)DBAccess struct {
 }
 
 // 分页查询@(modelName)
-func (@(variableName)DB *@(modelName)DBAccess) List(pageNum, pageSize int) ([]db.@(modelName), int, error) {
-    @(variableName)List := []db.@(modelName){}
+func (@(variableName)DB *@(modelName)DBAccess) List(pageNum, pageSize int) ([]*db.@(modelName), int, error) {
+    @(variableName)List := []*db.@(modelName){}
     var count int
-    query := @(variableName)DB.db
+    query := @(variableName)DB.db.Model(&db.@(modelName){})
     isPagingQuery := pageNum > 0 && pageSize > 0
     // 分页查询
     if isPagingQuery {
+        // 先查询总数
+        if err := query.Count(&count).Error; err != nil {
+            return @(variableName)List, 0, err
+        }
         query = query.Offset((pageNum - 1) * pageSize).Limit(pageSize)
     }
     err := query.Find(&@(variableName)List).Error
@@ -36,11 +40,7 @@ func (@(variableName)DB *@(modelName)DBAccess) List(pageNum, pageSize int) ([]db
         }
         return @(variableName)List, 0, err
     }
-    if isPagingQuery {
-        if err := @(variableName)DB.db.Model(&db.@(modelName){}).Count(&count).Error; err != nil {
-            return @(variableName)List, 0, err
-        }
-    } else {
+    if !isPagingQuery {
         return @(variableName)List, len(@(variableName)List), err
     }
     return @(variableName)List, count, nil

@@ -36,7 +36,7 @@ func (ctl *Controller) Get@(modelName)List(c *gin.Context) {
             Code: @(errorPackage).CodeSuccess,
         },
         Data: struct {
-            @(modelName)s       []@(beanPackage).@(modelName) `json:"rows"`
+            @(modelName)s       []*@(beanPackage).@(modelName) `json:"rows"`
             TotalCount int          `json:"total_count"`
         }{
             @(modelName)s:       @(variableName)List,

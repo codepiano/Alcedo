@@ -151,7 +151,9 @@ public class TypeTransfer {
         golangTypeImport.put(GOLANG_ARRAY_TYPE_DECLARE, "github.com/lib/pq");
         // 初始化 golang 类型和 pq array 包装类的关系
         golangTypeTopqTypeRelation.put("int", "pq.Int64Array");
+        golangTypeTopqTypeRelation.put("uint", "pq.Int64Array");
         golangTypeTopqTypeRelation.put("int64", "pq.Int64Array");
+        golangTypeTopqTypeRelation.put("uint64", "pq.Int64Array");
         golangTypeTopqTypeRelation.put("string", "pq.StringArray");
         golangTypeTopqTypeRelation.put("float64", "pq.Float64Array");
         golangTypeTopqTypeRelation.put("bool", "pq.BoolArray");

@@ -32,7 +32,7 @@ func (srv *Service) Get@(modelName)ByID(id uint64, tx *gorm.DB) (*@(beanPackage)
 }
 
 // 获取 @modelName 列表
-func (srv *Service) Get@(modelName)List(pageNum, pageSize int) ([]@(beanPackage).@(modelName), int, error) {
+func (srv *Service) Get@(modelName)List(pageNum, pageSize int) ([]*@(beanPackage).@(modelName), int, error) {
     @(variableName)List, count, err := srv.DB.@(modelName).List(pageNum, pageSize)
     if err != nil {
         srv.Logger.Errorf("db error occurred when querying @(variableName)! %+v", err)
