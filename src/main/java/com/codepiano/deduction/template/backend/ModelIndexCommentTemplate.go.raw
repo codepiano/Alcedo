@@ -1,0 +1,30 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import org.apache.commons.lang3.StringUtils;
+@import java.util.*
+
+@args(Map<String, List<IndexDescription>> indexes)
+
+/*
+@for ((key, index) : indexes) {
+ * index name: @key
+    @* 用index的第一列来取整个index的信息 *@
+    @with(info = index.get(0)){
+ * index type: @info.translateTypeToString(info.getType())
+ * index uniq: @info.getNonUnique()
+    @if(StringUtils.isNoneEmpty(info.getFilterCondition())) {
+ * index filter: @info.getFilterCondition()
+    }
+ * index columns:
+        @for (column : index) {
+ *   order: @column.getOrdinalPosition(),  column name: @column.getColumnName() @column.getAscOrDescString()
+        }
+    }
+ *
+ * --------------------------------
+ *
+}
+ */
+

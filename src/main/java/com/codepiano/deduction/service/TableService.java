@@ -2,6 +2,7 @@ package com.codepiano.deduction.service;
 
 import com.codepiano.deduction.exception.AlcedoException;
 import com.codepiano.deduction.exception.ErrorCode;
+import com.codepiano.deduction.models.IndexDescription;
 import com.codepiano.deduction.models.PrimaryKeyDescription;
 import com.codepiano.deduction.models.TableDescription;
 import lombok.extern.slf4j.Slf4j;
@@ -11,10 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author codepiano
@@ -45,6 +43,7 @@ public class TableService {
                     throw new AlcedoException(ErrorCode.GET_DB_METADATA_ERROR);
                 }
                 tableDescription.setPrimaryKeys(getPrimaryKeys(catalog, tableDescription.getTableName()));
+                tableDescription.setIndexes(getIndex(catalog, tableDescription.getTableName()));
                 result.add(tableDescription);
             }
         } catch (Exception e) {
@@ -73,6 +72,40 @@ public class TableService {
                     result.put(primaryKeyDescription.getColumnName(), primaryKeyDescription);
                 }
             }
+        } catch (Exception e) {
+            log.error("get tables of catalog: {} error!", catalog, e);
+            throw new AlcedoException(ErrorCode.GET_DB_METADATA_ERROR);
+        }
+        return result;
+    }
+
+    /**
+     * 获取 table 的索引
+     *
+     * @param catalog
+     * @param tableName
+     * @return
+     */
+    private Map<String, List<IndexDescription>> getIndex(String catalog, String tableName) {
+        final Map<String, List<IndexDescription>> result = new HashMap<>();
+        BeanPropertyRowMapper<IndexDescription> rowMapper = BeanPropertyRowMapper.newInstance(IndexDescription.class);
+        try {
+            ResultSet rs = databaseMetaData.getIndexInfo(catalog, null, tableName, false, true);
+            while (rs.next()) {
+                IndexDescription indexDescription = rowMapper.mapRow(rs, rs.getRow());
+                // 有可能没有主键
+                if (indexDescription != null) {
+                    if (result.containsKey(indexDescription.getIndexName())) {
+                        result.get(indexDescription.getIndexName()).add(indexDescription);
+                    } else {
+                        List<IndexDescription> index = new ArrayList<>();
+                        index.add(indexDescription);
+                        result.put(indexDescription.getIndexName(), index);
+                    }
+                }
+            }
+            // 按索引中的序号排序
+            result.values().forEach(indexes -> indexes.sort(Comparator.comparingInt(IndexDescription::getOrdinalPosition)));
         } catch (Exception e) {
             log.error("get tables of catalog: {} error!", catalog, e);
             throw new AlcedoException(ErrorCode.GET_DB_METADATA_ERROR);

@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,4 +61,12 @@ public class TableDescription {
      * primary key descriptions
      */
     private Map<String, PrimaryKeyDescription> primaryKeys;
+    /**
+     * index descriptions
+     */
+    private Map<String, List<IndexDescription>> indexes;
+    /**
+     * columns
+     */
+    private List<ColumnDescription> columns;
 }

@@ -30,13 +30,15 @@ type @NameTransfer.transferToCamelCase(table.getTableName()) struct {
      * column sql type: @column.getTypeName()
      * column size: @column.getColumnSize()?:"not applicable"
      * column remark: @column.getRemarks()?:"none"
-     *
+     */
         @with (primaryKeyTag = column.isPrimaryKey()? "gorm:\"primary_key\"":"") {
     @NameTransfer.transferToCamelCase(column.getColumnName()) @typeTransfer.transferToGoLangType(column) `json:"@column.getColumnName()" @primaryKeyTag`
         }
 
     }
 }
+
+@com.codepiano.deduction.template.backend.ModelIndexCommentTemplate.template(table.getIndexes())
 
 /*
  * The COLUMN_SIZE column specifies the column size for the given column.
