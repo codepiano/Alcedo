@@ -4,7 +4,16 @@
 @import com.codepiano.deduction.models.*
 @import java.util.*
 
-@args (Map<String, String> packages, String controllerPackage, String modelName, String variableName, String beanPackage, String errorPackage, String httpPackage)
+@args (Map<String, String> packages,
+         Map<String,String> packageName,
+         String tableName)
+
+@with(beanPackage = packageName.get("bean"),
+        controllerPackage = packageName.get("controller"),
+        errorPackage = packageName.get("error"),
+        httpPackage = packageName.get("http"),
+        modelName = NameTransfer.transferToCamelCase(tableName),
+        variableName = NameTransfer.transferToVariableName(tableName)){
 
 package @controllerPackage
 
@@ -47,7 +56,7 @@ func (ctl *Controller) Get@(modelName)List(c *gin.Context) {
 
 // 根据 id 获取@(modelName)
 func (ctl *Controller) Get@(modelName)ById(c *gin.Context) {
-	idString := c.Param("@(variableName)_id")
+	idString := c.Param("@(tableName)_id")
 	if idString == "" {
 		c.Error(&rest.Error{Code: rest.RequestParameterInvalid})
 		return
@@ -67,7 +76,7 @@ func (ctl *Controller) Get@(modelName)ById(c *gin.Context) {
 			Code: rest.CodeSuccess,
 		},
 		Data: struct {
-			@(modelName) *db.@(modelName) `json:"@(variableName)"`
+			@(modelName) *db.@(modelName) `json:"@(tableName)"`
 		}{
 			@(modelName): @(variableName),
 		},
@@ -92,7 +101,7 @@ func (ctl *Controller) Create@(modelName)(c *gin.Context) {
             Code: @(errorPackage).CodeSuccess,
         },
         Data: struct {
-            @(modelName) *@(beanPackage).@(modelName) `json:"@variableName"`
+            @(modelName) *@(beanPackage).@(modelName) `json:"@tableName"`
         }{
             @(modelName): @(variableName),
         },
@@ -101,7 +110,7 @@ func (ctl *Controller) Create@(modelName)(c *gin.Context) {
 
 // 更新@(modelName)
 func (ctl *Controller) Update@(modelName)(c *gin.Context) {
-    idString := c.Param("@(variableName)_id")
+    idString := c.Param("@(tableName)_id")
     if idString == "" {
         c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
         return
@@ -128,7 +137,7 @@ func (ctl *Controller) Update@(modelName)(c *gin.Context) {
             Code: @(errorPackage).CodeSuccess,
         },
         Data: struct {
-            @(modelName) *@(beanPackage).@(modelName)
+            @(modelName) *@(beanPackage).@(modelName) `json:"@tableName"`
         }{
             @(modelName): @(variableName),
         },
@@ -137,7 +146,7 @@ func (ctl *Controller) Update@(modelName)(c *gin.Context) {
 
 // 删除@(modelName)
 func (ctl *Controller) Delete@(modelName)(c *gin.Context) {
-    idString := c.Param("@(variableName)_id")
+    idString := c.Param("@(tableName)_id")
     if idString == "" {
         c.Error(&@(errorPackage).Error{Code: @(errorPackage).RequestParameterInvalid})
         return
@@ -158,10 +167,11 @@ func (ctl *Controller) Delete@(modelName)(c *gin.Context) {
             Code: @(errorPackage).CodeSuccess,
         },
         Data: struct {
-            @(modelName) *@(beanPackage).@(modelName)
+            @(modelName) *@(beanPackage).@(modelName) `json:"@tableName"`
         }{
             @(modelName): @(variableName),
         },
     })
 }
 
+}

@@ -4,7 +4,9 @@
 @import com.codepiano.deduction.models.*
 @import java.util.*
 
-@args (Map<String,String> packages, String modelName, String variableName, String packageName)
+@args (Map<String,String> packages, String tableName, String packageName)
+
+@with(modelName = NameTransfer.transferToCamelCase(tableName), variableName = NameTransfer.transferToVariableName(tableName)){
 
 package @packageName
 
@@ -117,4 +119,5 @@ func (@(variableName)DB *@(modelName)DBAccess) Update(@(variableName) *db.@(mode
         return err
     }
     return nil
+}
 }

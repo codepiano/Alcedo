@@ -4,9 +4,18 @@
 @import com.codepiano.deduction.models.*
 @import java.util.*
 
-@args (Map<String, String> packages, String servicePackage, String modelName, String variableName, String beanPackage, String errorPackage, String httpPackage, List<ColumnDescription> columns, Set<String> excludes)
+@args (Map<String, String> packages,
+         Map<String,String> packageName,
+         TableDescription table,
+         Set<String> excludes)
 
-package @servicePackage
+@with(beanPackage = packageName.get("bean"),
+        errorPackage = packageName.get("error"),
+        httpPackage = packageName.get("http"),
+        modelName = NameTransfer.transferToCamelCase(table.getTableName()),
+        variableName = NameTransfer.transferToVariableName(table.getTableName())){
+
+package @packageName.get("service")
 
 import (
     "time"
@@ -59,7 +68,7 @@ func (srv *Service) Get@(modelName)List(pageNum, pageSize int, tx *gorm.DB) ([]*
 // 创建 @modelName
 func (srv *Service) Create@(modelName)(param *@(httpPackage).@(modelName)Param, user *rest.LoginUser, tx *gorm.DB) (*@(beanPackage).@(modelName), error) {
     @(variableName) := &@(beanPackage).@(modelName){}
-    @for (column : columns) {
+    @for (column : table.getColumns()) {
         @if(!excludes.contains(column.getColumnName())) {
     @(variableName).@NameTransfer.transferToCamelCase(column.getColumnName()) = param.@NameTransfer.transferToCamelCase(column.getColumnName())
         }
@@ -139,4 +148,5 @@ func (srv *Service) Update@(modelName)(id uint64, param *@(httpPackage).@(modelN
         return nil, err
     }
     return @(variableName), nil
+}
 }

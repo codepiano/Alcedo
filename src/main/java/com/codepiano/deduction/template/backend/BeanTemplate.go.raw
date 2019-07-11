@@ -4,11 +4,11 @@
 @import com.codepiano.deduction.models.*
 @import java.util.*
 
-@args (TableDescription table, List<ColumnDescription> columns, TypeTransfer typeTransfer, String packageName)
+@args (TableDescription table, TypeTransfer typeTransfer, String packageName)
 
 package @packageName
 
-@with (imports = typeTransfer.getImportTypes(columns)) {
+@with (imports = typeTransfer.getImportTypes(table.getColumns())) {
     @if (!imports.isEmpty()) {
 import (
         @for (importString : imports) {
@@ -23,7 +23,7 @@ import (
  * table remark: @table.getRemarks()?:"none"
  */
 type @NameTransfer.transferToCamelCase(table.getTableName()) struct {
-    @for (column : columns) {
+    @for (column : table.getColumns()) {
     /*
      * column: @column.getColumnName()
      * column nullable: @column.getIsNullable()

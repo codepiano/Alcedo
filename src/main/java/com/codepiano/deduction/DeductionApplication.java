@@ -185,27 +185,27 @@ public class DeductionApplication {
         FileUtils.forceMkdir(new File(commonDir));
         // backend begin
         var packagePath = packagePath();
+        var packageName = packageName();
         tables.forEach(tableDescription -> {
-            String modelName = NameTransfer.transferToCamelCase(tableDescription.getTableName());
-            String variableName = NameTransfer.transferToVariableName(modelName);
             // 生成 bean 代码
             List<ColumnDescription> columns = columnService.getAllColumnsInfoFromTable(tableDescription);
-            String model = BeanTemplate.template(tableDescription, columns, typeTransfer, businessBeanPackage)
+            tableDescription.setColumns(columns);
+            String model = BeanTemplate.template(tableDescription, typeTransfer, businessBeanPackage)
                     .render()
                     .toString();
             writeToGoFile(businessModelDir, tableDescription.getTableName(), model);
             // 生成 model 层代码
-            String dao = DaoTemplate.template(packagePath, modelName, variableName, daoPackage)
+            String dao = DaoTemplate.template(packagePath, tableDescription.getTableName(), daoPackage)
                     .render()
                     .toString();
             writeToGoFile(daoDir, tableDescription.getTableName() + "_dao", dao);
             // 生成 service 代码
-            String service = ServiceTemplate.template(packagePath, servicePackage, modelName, variableName, businessBeanPackage, errorPackage, httpBeanPackage, columns, ignore)
+            String service = ServiceTemplate.template(packagePath, packageName, tableDescription, ignore)
                     .render()
                     .toString();
             writeToGoFile(serviceDir, tableDescription.getTableName() + "_service", service);
             // 生成 controller 代码
-            String controller = ControllerTemplate.template(packagePath, controllerPackage, modelName, variableName, businessBeanPackage, errorPackage, httpBeanPackage)
+            String controller = ControllerTemplate.template(packagePath, packageName, tableDescription.getTableName())
                     .render()
                     .toString();
             writeToGoFile(controllerDir, tableDescription.getTableName() + "_controller", controller);
@@ -325,6 +325,19 @@ public class DeductionApplication {
         packages.put("http", basePackage + File.separator + httpBeanPath);
         packages.put("constant", basePackage + File.separator + constantPath);
         packages.put("common", basePackage + File.separator + commonPath);
+        return packages;
+    }
+
+    private Map<String, String> packageName() {
+        Map<String, String> packages = new HashMap<>();
+        packages.put("bean", businessBeanPackage);
+        packages.put("dao", daoPackage);
+        packages.put("service", servicePackage);
+        packages.put("controller", controllerPackage);
+        packages.put("error", errorPackage);
+        packages.put("http", httpBeanPackage);
+        packages.put("constant", constantPackage);
+        packages.put("common", commonPackage);
         return packages;
     }
 
