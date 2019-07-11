@@ -195,7 +195,7 @@ public class DeductionApplication {
                     .toString();
             writeToGoFile(businessModelDir, tableDescription.getTableName(), model);
             // 生成 model 层代码
-            String dao = DaoTemplate.template(packagePath, tableDescription.getTableName(), daoPackage)
+            String dao = DaoTemplate.template(packagePath, tableDescription, daoPackage)
                     .render()
                     .toString();
             writeToGoFile(daoDir, tableDescription.getTableName() + "_dao", dao);

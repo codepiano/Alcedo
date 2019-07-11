@@ -2,11 +2,13 @@
 
 @import com.codepiano.deduction.tool.*
 @import com.codepiano.deduction.models.*
+@import com.codepiano.deduction.template.backend.*
 @import java.util.*
 
-@args (Map<String,String> packages, String tableName, String packageName)
+@args (Map<String,String> packages, TableDescription table, String packageName)
 
-@with(modelName = NameTransfer.transferToCamelCase(tableName), variableName = NameTransfer.transferToVariableName(tableName)){
+@with(modelName = NameTransfer.transferToCamelCase(table.getTableName()),
+        variableName = NameTransfer.transferToVariableName(table.getTableName())){
 
 package @packageName
 
@@ -120,4 +122,7 @@ func (@(variableName)DB *@(modelName)DBAccess) Update(@(variableName) *db.@(mode
     }
     return nil
 }
+
+@DaoIndexOperationTemplate.template(table.getIndexes(), table.getTableName())
+
 }

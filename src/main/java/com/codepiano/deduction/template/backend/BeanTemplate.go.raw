@@ -2,6 +2,7 @@
 
 @import com.codepiano.deduction.tool.*
 @import com.codepiano.deduction.models.*
+@import com.codepiano.deduction.template.backend.*
 @import java.util.*
 
 @args (TableDescription table, TypeTransfer typeTransfer, String packageName)
@@ -38,7 +39,7 @@ type @NameTransfer.transferToCamelCase(table.getTableName()) struct {
     }
 }
 
-@com.codepiano.deduction.template.backend.ModelIndexCommentTemplate.template(table.getIndexes())
+@ModelIndexCommentTemplate.template(table.getIndexes())
 
 /*
  * The COLUMN_SIZE column specifies the column size for the given column.

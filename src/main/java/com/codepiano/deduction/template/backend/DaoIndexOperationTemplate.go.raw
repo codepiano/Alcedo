@@ -1,0 +1,30 @@
+@option discardLogicWhitespace=true
+
+@import com.codepiano.deduction.tool.*
+@import com.codepiano.deduction.models.*
+@import org.apache.commons.lang3.StringUtils;
+@import java.util.*
+
+@args(Map<String, List<IndexDescription>> indexes, TableDescription table)
+
+@with(modelName = NameTransfer.transferToCamelCase(table.getTableName()),
+        variableName = NameTransfer.transferToVariableName(table.getTableName())){
+    @for ((key, index) : indexes) {
+        @if(index.size() == 1 && "id".equalsIgnoreCase(index.get(0).getColumnName())) {
+            @continue
+        } else {
+            @if(index.get(0).getNonUnique()){
+            } else {
+// 通过 @NameTransfer.transferToComment(index) 查询 @modelName
+func (@(variableName)DB *@(modelName)DBAccess) GetBy@(NameTransfer.transferToName(index))(ruleId uint64, gid []string) (*db.@(modelName), error) {
+	@(variableName) := &db.@(modelName){}
+	err := @(variableName)DB.db.Where("@(NameTransfer.transferToQuery(index))", @(NameTransfer.transferToParam(index))).First(@(variableName)).Error
+	if err != nil {
+		return nil, err
+	}
+	return @(variableName), nil
+}
+            }
+        }
+    }
+}
