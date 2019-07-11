@@ -157,154 +157,162 @@ public class DeductionApplication {
         return args -> {
             var uri = URI.create(datasourceUrl.substring(5));
             String catalog = uri.getPath().substring(1);
-            // backend
-            var businessModelDir = apiBasePath + File.separator + businessBeanPath;
-            FileUtils.forceMkdir(new File(businessModelDir));
-            var httpModelDir = apiBasePath + File.separator + httpBeanPath;
-            FileUtils.forceMkdir(new File(httpModelDir));
-            var daoDir = apiBasePath + File.separator + daoPath;
-            FileUtils.forceMkdir(new File(daoDir));
-            var serviceDir = apiBasePath + File.separator + servicePath;
-            FileUtils.forceMkdir(new File(serviceDir));
-            var controllerDir = apiBasePath + File.separator + controllerPath;
-            FileUtils.forceMkdir(new File(controllerDir));
-            var errorDir = apiBasePath + File.separator + errorPath;
-            FileUtils.forceMkdir(new File(errorDir));
-            var cmdMainDir = cmdBasePath + File.separator + cmdMainPath;
-            FileUtils.forceMkdir(new File(cmdMainDir));
-            var constantDir = apiBasePath + File.separator + constantPath;
-            FileUtils.forceMkdir(new File(constantDir));
-            var commonDir = apiBasePath + File.separator + commonPath;
-            FileUtils.forceMkdir(new File(commonDir));
-            // backend begin
             List<TableDescription> tables = tableService.getAllTablesInCatalog(catalog);
-            var packagePath = packagePath();
-            tables.forEach(tableDescription -> {
-                String modelName = NameTransfer.transferToCamelCase(tableDescription.getTableName());
-                String variableName = NameTransfer.transferToVariableName(modelName);
-                // 生成 bean 代码
-                List<ColumnDescription> columns = columnService.getAllColumnsInfoFromTable(tableDescription);
-                String model = BeanTemplate.template(tableDescription, columns, typeTransfer, businessBeanPackage)
-                        .render()
-                        .toString();
-                writeToGoFile(businessModelDir, tableDescription.getTableName(), model);
-                // 生成 model 层代码
-                String dao = DaoTemplate.template(packagePath, modelName, variableName, daoPackage)
-                        .render()
-                        .toString();
-                writeToGoFile(daoDir, tableDescription.getTableName() + "_dao", dao);
-                // 生成 service 代码
-                String service = ServiceTemplate.template(packagePath, servicePackage, modelName, variableName, businessBeanPackage, errorPackage, httpBeanPackage, columns, ignore)
-                        .render()
-                        .toString();
-                writeToGoFile(serviceDir, tableDescription.getTableName() + "_service", service);
-                // 生成 controller 代码
-                String controller = ControllerTemplate.template(packagePath, controllerPackage, modelName, variableName, businessBeanPackage, errorPackage, httpBeanPackage)
-                        .render()
-                        .toString();
-                writeToGoFile(controllerDir, tableDescription.getTableName() + "_controller", controller);
-            });
-            // 生成请求参数
-            String request = RequestModelTemplate.template(httpBeanPackage, tables, columnService, typeTransfer, ignore)
-                    .render()
-                    .toString();
-            writeToGoFile(httpModelDir, "request", request);
-            System.out.println(request);
-            // 生成响应体
-            String response = ResponseModelTemplate.template(httpBeanPackage)
-                    .render()
-                    .toString();
-            writeToGoFile(httpModelDir, "response", response);
-            // 生成 dao 对象初始化代码，注入数据库连接
-            String db = BaseDaoTemplate.template(tables, daoPackage)
-                    .render()
-                    .toString();
-            writeToGoFile(daoDir, "db_access", db);
-            // 生成 service 对象代码
-            String baseService = BaseServiceTemplate.template(servicePackage, basePackage + File.separator + daoPath, daoPackage)
-                    .render()
-                    .toString();
-            writeToGoFile(serviceDir, "service", baseService);
-            // 生成 controller 对象代码
-            String baseController = BaseControllerTemplate.template(controllerPackage, basePackage + File.separator + servicePackage, servicePackage)
-                    .render()
-                    .toString();
-            writeToGoFile(controllerDir, "controller", baseController);
-            // 生成 error 代码
-            String error = ErrorTemplate.template(errorPackage)
-                    .render()
-                    .toString();
-            writeToGoFile(errorDir, "error", error);
-            // 生成常量定义
-            String common = CommonTimeTemplate.template(commonPackage)
-                    .render()
-                    .toString();
-            writeToGoFile(commonDir, "common", common);
-            // 生成 main 代码
-            String main = MainTemplate.template(packagePath, daoPackage, servicePackage, controllerPackage, tables)
-                    .render()
-                    .toString();
-            writeToGoFile(cmdMainDir, "main", main);
-            // 生成 go.mod
-            String goMod = GoModTemplate.template(basePackage)
-                    .render()
-                    .toString();
-            writeToFile(apiBasePath, "go.mod", goMod);
-            // 生成 config.yml
-            String config = ConfigTemplate.template(uri.getHost(), uri.getPort(), datasourceUsername, datasourcePassword, uri.getPath())
-                    .render()
-                    .toString();
-            writeToFile(apiBasePath, "config.yml", config);
-            // frontend
-            var frontendStoreDir = frontendBasePath + File.separator + this.frontendStorePath;
-            FileUtils.forceMkdir(new File(frontendStoreDir));
-            var frontendSrcDir = frontendBasePath + File.separator + "/src";
-            FileUtils.forceMkdir(new File(frontendSrcDir));
-            var frontendConfigDir = frontendBasePath + File.separator + this.frontendConfigPath;
-            FileUtils.forceMkdir(new File(frontendConfigDir));
-            var frontendRouterDir = frontendBasePath + File.separator + this.frontendRouterPath;
-            FileUtils.forceMkdir(new File(frontendRouterDir));
-            var frontendViewDir = frontendBasePath + File.separator + this.frontendRouterPath;
-            FileUtils.forceMkdir(new File(frontendViewDir));
-            var frontendAPIDir = frontendBasePath + File.separator + this.frontendAPIPath;
-            FileUtils.forceMkdir(new File(frontendAPIDir));
-            // frontend begin
-            tables.forEach(tableDescription -> {
-                List<ColumnDescription> columns = columnService.getAllColumnsInfoFromTable(tableDescription);
-                String router = RouterTemplate.template(tableDescription, this.frontendRouterPath, this.frontendViewPath)
-                        .render()
-                        .toString();
-                writeToJsFile(frontendRouterDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), router);
-                String api = APITemplate.template(tableDescription)
-                        .render()
-                        .toString();
-                writeToJsFile(frontendAPIDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), api);
-                String modelListPage = ModelListTemplate.template(tableDescription, columns, typeTransfer)
-                        .render()
-                        .toString();
-                writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelListPage);
-                String modelAddPage = ModelAddTemplate.template(tableDescription, columns, typeTransfer, ignore)
-                        .render()
-                        .toString();
-                writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelAddPage);
-            });
-            String mainJs = MainJsTemplate.template(this.frontendRouterPath, this.frontendStorePath, this.frontendConfigPath)
-                    .render()
-                    .toString();
-            writeToJsFile(frontendSrcDir, "main.js", mainJs);
-            String appVue = AppTemplate.template()
-                    .render()
-                    .toString();
-            writeToVueFile(frontendSrcDir, "app", appVue);
-            String routerIndex = RouterIndexTemplate.template(tables, this.frontendRouterPath)
-                    .render()
-                    .toString();
-            writeToJsFile(frontendRouterDir, "index", routerIndex);
-            String mainVue = MainVueTemplate.template(tables)
-                    .render()
-                    .toString();
-            writeToJsFile(frontendViewDir, "index", mainVue);
+            generateBackend(uri, tables);
+            generateFrontend(tables);
         };
+    }
+
+    private void generateBackend(URI uri, List<TableDescription> tables) throws IOException {
+        // backend
+        var businessModelDir = apiBasePath + File.separator + businessBeanPath;
+        FileUtils.forceMkdir(new File(businessModelDir));
+        var httpModelDir = apiBasePath + File.separator + httpBeanPath;
+        FileUtils.forceMkdir(new File(httpModelDir));
+        var daoDir = apiBasePath + File.separator + daoPath;
+        FileUtils.forceMkdir(new File(daoDir));
+        var serviceDir = apiBasePath + File.separator + servicePath;
+        FileUtils.forceMkdir(new File(serviceDir));
+        var controllerDir = apiBasePath + File.separator + controllerPath;
+        FileUtils.forceMkdir(new File(controllerDir));
+        var errorDir = apiBasePath + File.separator + errorPath;
+        FileUtils.forceMkdir(new File(errorDir));
+        var cmdMainDir = cmdBasePath + File.separator + cmdMainPath;
+        FileUtils.forceMkdir(new File(cmdMainDir));
+        var constantDir = apiBasePath + File.separator + constantPath;
+        FileUtils.forceMkdir(new File(constantDir));
+        var commonDir = apiBasePath + File.separator + commonPath;
+        FileUtils.forceMkdir(new File(commonDir));
+        // backend begin
+        var packagePath = packagePath();
+        tables.forEach(tableDescription -> {
+            String modelName = NameTransfer.transferToCamelCase(tableDescription.getTableName());
+            String variableName = NameTransfer.transferToVariableName(modelName);
+            // 生成 bean 代码
+            List<ColumnDescription> columns = columnService.getAllColumnsInfoFromTable(tableDescription);
+            String model = BeanTemplate.template(tableDescription, columns, typeTransfer, businessBeanPackage)
+                    .render()
+                    .toString();
+            writeToGoFile(businessModelDir, tableDescription.getTableName(), model);
+            // 生成 model 层代码
+            String dao = DaoTemplate.template(packagePath, modelName, variableName, daoPackage)
+                    .render()
+                    .toString();
+            writeToGoFile(daoDir, tableDescription.getTableName() + "_dao", dao);
+            // 生成 service 代码
+            String service = ServiceTemplate.template(packagePath, servicePackage, modelName, variableName, businessBeanPackage, errorPackage, httpBeanPackage, columns, ignore)
+                    .render()
+                    .toString();
+            writeToGoFile(serviceDir, tableDescription.getTableName() + "_service", service);
+            // 生成 controller 代码
+            String controller = ControllerTemplate.template(packagePath, controllerPackage, modelName, variableName, businessBeanPackage, errorPackage, httpBeanPackage)
+                    .render()
+                    .toString();
+            writeToGoFile(controllerDir, tableDescription.getTableName() + "_controller", controller);
+        });
+        // 生成请求参数
+        String request = RequestModelTemplate.template(httpBeanPackage, tables, columnService, typeTransfer, ignore)
+                .render()
+                .toString();
+        writeToGoFile(httpModelDir, "request", request);
+        System.out.println(request);
+        // 生成响应体
+        String response = ResponseModelTemplate.template(httpBeanPackage)
+                .render()
+                .toString();
+        writeToGoFile(httpModelDir, "response", response);
+        // 生成 dao 对象初始化代码，注入数据库连接
+        String db = BaseDaoTemplate.template(tables, daoPackage)
+                .render()
+                .toString();
+        writeToGoFile(daoDir, "db_access", db);
+        // 生成 service 对象代码
+        String baseService = BaseServiceTemplate.template(servicePackage, basePackage + File.separator + daoPath, daoPackage)
+                .render()
+                .toString();
+        writeToGoFile(serviceDir, "service", baseService);
+        // 生成 controller 对象代码
+        String baseController = BaseControllerTemplate.template(controllerPackage, basePackage + File.separator + servicePackage, servicePackage)
+                .render()
+                .toString();
+        writeToGoFile(controllerDir, "controller", baseController);
+        // 生成 error 代码
+        String error = ErrorTemplate.template(errorPackage)
+                .render()
+                .toString();
+        writeToGoFile(errorDir, "error", error);
+        // 生成常量定义
+        String common = CommonTimeTemplate.template(commonPackage)
+                .render()
+                .toString();
+        writeToGoFile(commonDir, "common", common);
+        // 生成 main 代码
+        String main = MainTemplate.template(packagePath, daoPackage, servicePackage, controllerPackage, tables)
+                .render()
+                .toString();
+        writeToGoFile(cmdMainDir, "main", main);
+        // 生成 go.mod
+        String goMod = GoModTemplate.template(basePackage)
+                .render()
+                .toString();
+        writeToFile(apiBasePath, "go.mod", goMod);
+        // 生成 config.yml
+        String config = ConfigTemplate.template(uri.getHost(), uri.getPort(), datasourceUsername, datasourcePassword, uri.getPath())
+                .render()
+                .toString();
+        writeToFile(apiBasePath, "config.yml", config);
+    }
+
+    private void generateFrontend(List<TableDescription> tables) throws IOException {
+        // frontend
+        var frontendStoreDir = frontendBasePath + File.separator + this.frontendStorePath;
+        FileUtils.forceMkdir(new File(frontendStoreDir));
+        var frontendSrcDir = frontendBasePath + File.separator + "/src";
+        FileUtils.forceMkdir(new File(frontendSrcDir));
+        var frontendConfigDir = frontendBasePath + File.separator + this.frontendConfigPath;
+        FileUtils.forceMkdir(new File(frontendConfigDir));
+        var frontendRouterDir = frontendBasePath + File.separator + this.frontendRouterPath;
+        FileUtils.forceMkdir(new File(frontendRouterDir));
+        var frontendViewDir = frontendBasePath + File.separator + this.frontendRouterPath;
+        FileUtils.forceMkdir(new File(frontendViewDir));
+        var frontendAPIDir = frontendBasePath + File.separator + this.frontendAPIPath;
+        FileUtils.forceMkdir(new File(frontendAPIDir));
+        // frontend begin
+        tables.forEach(tableDescription -> {
+            List<ColumnDescription> columns = columnService.getAllColumnsInfoFromTable(tableDescription);
+            String router = RouterTemplate.template(tableDescription, this.frontendRouterPath, this.frontendViewPath)
+                    .render()
+                    .toString();
+            writeToJsFile(frontendRouterDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), router);
+            String api = APITemplate.template(tableDescription)
+                    .render()
+                    .toString();
+            writeToJsFile(frontendAPIDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), api);
+            String modelListPage = ModelListTemplate.template(tableDescription, columns, typeTransfer)
+                    .render()
+                    .toString();
+            writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelListPage);
+            String modelAddPage = ModelAddTemplate.template(tableDescription, columns, typeTransfer, ignore)
+                    .render()
+                    .toString();
+            writeToJsFile(frontendViewDir, NameTransfer.transferToKebabCase(tableDescription.getTableName()), modelAddPage);
+        });
+        String mainJs = MainJsTemplate.template(this.frontendRouterPath, this.frontendStorePath, this.frontendConfigPath)
+                .render()
+                .toString();
+        writeToJsFile(frontendSrcDir, "main.js", mainJs);
+        String appVue = AppTemplate.template()
+                .render()
+                .toString();
+        writeToVueFile(frontendSrcDir, "app", appVue);
+        String routerIndex = RouterIndexTemplate.template(tables, this.frontendRouterPath)
+                .render()
+                .toString();
+        writeToJsFile(frontendRouterDir, "index", routerIndex);
+        String mainVue = MainVueTemplate.template(tables)
+                .render()
+                .toString();
+        writeToJsFile(frontendViewDir, "index", mainVue);
     }
 
     private Map<String, String> packagePath() {

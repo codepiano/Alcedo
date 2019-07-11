@@ -20,10 +20,14 @@ type @(modelName)DBAccess struct {
 }
 
 // 分页查询@(modelName)
-func (@(variableName)DB *@(modelName)DBAccess) List(pageNum, pageSize int) ([]*db.@(modelName), int, error) {
+func (@(variableName)DB *@(modelName)DBAccess) List(pageNum, pageSize int, tx *gorm.DB) ([]*db.@(modelName), int, error) {
+	var dbConn = @(variableName)DB.db
+	if tx != nil {
+		dbConn = tx
+	}
     @(variableName)List := []*db.@(modelName){}
     var count int
-    query := @(variableName)DB.db.Model(&db.@(modelName){})
+    query := dbConn.Model(&db.@(modelName){})
     isPagingQuery := pageNum > 0 && pageSize > 0
     // 分页查询
     if isPagingQuery {
@@ -47,8 +51,12 @@ func (@(variableName)DB *@(modelName)DBAccess) List(pageNum, pageSize int) ([]*d
 }
 
 // 创建@(modelName)
-func (@(variableName)DB *@(modelName)DBAccess) Create(@(variableName) *db.@(modelName)) error {
-    err := @(variableName)DB.db.Create(@(variableName)).Error
+func (@(variableName)DB *@(modelName)DBAccess) Create(@(variableName) *db.@(modelName), tx *gorm.DB) error {
+	var dbConn = @(variableName)DB.db
+	if tx != nil {
+		dbConn = tx
+	}
+    err := dbConn.Create(@(variableName)).Error
     if err != nil {
         return err
     }

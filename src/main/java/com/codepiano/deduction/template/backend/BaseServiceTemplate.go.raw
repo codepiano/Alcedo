@@ -15,8 +15,33 @@ type Service struct {
 
 type InTransaction func(tx *gorm.DB) error
 
+// 传播机制: 强制开启新事务
 func (srv Service) RunInTransaction(fn InTransaction) error {
 	tx := srv.DB.BeginTransaction()
+	return srv.RunInExistsTransaction(tx, fn)
+}
+
+// 传播机制: 存在就加入，不存在不开启
+func (srv Service) JoinIfExistsTransaction(tx *gorm.DB, fn InTransaction) error {
+	if tx != nil {
+		return srv.RunInExistsTransaction(tx, fn)
+	}
+	return fn(nil)
+}
+
+// 传播机制: 开启或者加入
+func (srv Service) BeginOrJoinTransaction(tx *gorm.DB, fn InTransaction) error {
+	if tx == nil {
+		tx = srv.DB.BeginTransaction()
+	}
+	return srv.RunInExistsTransaction(tx, fn)
+}
+
+// 传播机制: 必须在事务中
+func (srv Service) RunInExistsTransaction(tx *gorm.DB, fn InTransaction) error {
+	if tx == nil {
+		panic(errors.WithStack(errors.Errorf("transaction is nil!")))
+	}
 	if tx.Error != nil {
 		srv.Logger.Errorf("error occurred when begin transaction: %+v", tx.Error)
 		return &rest.Error{Code: rest.InternalServerError}
