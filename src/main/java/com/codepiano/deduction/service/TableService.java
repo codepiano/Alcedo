@@ -90,7 +90,7 @@ public class TableService {
         final Map<String, List<IndexDescription>> result = new HashMap<>();
         BeanPropertyRowMapper<IndexDescription> rowMapper = BeanPropertyRowMapper.newInstance(IndexDescription.class);
         try {
-            ResultSet rs = databaseMetaData.getIndexInfo(catalog, null, tableName, true, true);
+            ResultSet rs = databaseMetaData.getIndexInfo(catalog, null, tableName, false, true);
             while (rs.next()) {
                 IndexDescription indexDescription = rowMapper.mapRow(rs, rs.getRow());
                 // 有可能没有主键

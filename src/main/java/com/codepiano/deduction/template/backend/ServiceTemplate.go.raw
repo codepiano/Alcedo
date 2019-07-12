@@ -21,7 +21,6 @@ import (
     "time"
     "github.com/jinzhu/gorm"
     "github.com/lib/pq"
-    "@(packages.get("dao"))"
     "@(packages.get("bean"))"
     "@(packages.get("error"))"
     "@(packages.get("constant"))"
@@ -30,8 +29,9 @@ import (
 
 func (srv *Service) Get@(modelName)ByID(id uint64, tx *gorm.DB) (*@(beanPackage).@(modelName), error) {
     var @(variableName) *@(beanPackage).@(modelName)
-    err := srv.JoinIfExistsTransaction(tx, func(tx *gorm.DB) error {
-        @(variableName), err := srv.DB.@(modelName).GetById(id, tx)
+    var err error
+    err = srv.JoinIfExistsTransaction(tx, func(tx *gorm.DB) error {
+        @(variableName), err = srv.DB.@(modelName).GetById(id, tx)
         if err != nil {
             if gorm.IsRecordNotFoundError(err) {
                 return &@(errorPackage).Error{Code: @(errorPackage).RequestDataNotExisted}
@@ -40,7 +40,7 @@ func (srv *Service) Get@(modelName)ByID(id uint64, tx *gorm.DB) (*@(beanPackage)
             return &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
         }
         return nil
-    }
+    })
     if err != nil {
         return nil, err
     }
@@ -51,18 +51,19 @@ func (srv *Service) Get@(modelName)ByID(id uint64, tx *gorm.DB) (*@(beanPackage)
 func (srv *Service) Get@(modelName)List(pageNum, pageSize int, tx *gorm.DB) ([]*@(beanPackage).@(modelName), int, error) {
     var @(variableName)List []*@(beanPackage).@(modelName)
     var count *int
-    err := srv.JoinIfExistsTransaction(tx, func(tx *gorm.DB) error {
-        @(variableName)List, count, err := srv.DB.@(modelName).List(pageNum, pageSize, tx)
+    var err error
+    err = srv.JoinIfExistsTransaction(tx, func(tx *gorm.DB) error {
+        @(variableName)List, *count, err = srv.DB.@(modelName).List(pageNum, pageSize, tx)
         if err != nil {
             srv.Logger.Errorf("db error occurred when querying @(variableName)! %+v", err)
             return &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
         }
         return nil
-    }
+    })
     if err != nil {
         return nil, 0, err
     }
-    return @(variableName)List, count, nil
+    return @(variableName)List, *count, nil
 }
 
 // 创建 @modelName
@@ -75,9 +76,9 @@ func (srv *Service) Create@(modelName)(param *@(httpPackage).@(modelName)Param, 
     }
     now := common.Time(time.Now())
     @(variableName).CreatedBy = user.ID
-    @(variableName).CreatedAt = now
+    @(variableName).CreatedAt = &now
     @(variableName).UpdatedBy = user.ID
-    @(variableName).UpdatedAt = now
+    @(variableName).UpdatedAt = &now
     err := srv.BeginOrJoinTransaction(tx, func(tx *gorm.DB) error {
         err := srv.DB.@(modelName).Create(@(variableName), tx)
         if err != nil {
@@ -90,7 +91,7 @@ func (srv *Service) Create@(modelName)(param *@(httpPackage).@(modelName)Param, 
             return &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
         }
         return nil
-    }
+    })
     if err != nil {
         return nil, err
     }
@@ -129,18 +130,18 @@ func (srv *Service) Update@(modelName)(id uint64, param *@(httpPackage).@(modelN
         @(variableName), err := srv.DB.@(modelName).GetById(id, tx)
         if err != nil {
             if gorm.IsRecordNotFoundError(err) {
-                return nil, &rest.Error{Code: rest.RequestDataNotExisted}
+                return &rest.Error{Code: rest.RequestDataNotExisted}
             }
             srv.Logger.Errorf("db error when update @modelName info instance! error: %+v", err)
-            return nil, &rest.Error{Code: rest.InternalServerError}
+            return &rest.Error{Code: rest.InternalServerError}
         }
         err = srv.DB.@(modelName).Update(@(variableName), user.ID, tx)
         if err != nil {
             if gorm.IsRecordNotFoundError(err) {
-                return nil, &@(errorPackage).Error{Code: @(errorPackage).RequestDataNotExisted}
+                return &@(errorPackage).Error{Code: @(errorPackage).RequestDataNotExisted}
             }
             srv.Logger.Errorf("db error occurred when updating @(variableName)! error: %+v", err)
-            return nil, &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
+            return &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
         }
         return nil
     })

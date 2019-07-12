@@ -115,7 +115,7 @@ func (@(variableName)DB *@(modelName)DBAccess) Update(@(variableName) *db.@(mode
     // 更新删除人
     @(variableName).UpdatedBy = updateBy
     now := common.Time(time.Now())
-    @(variableName).UpdatedAt = now
+    @(variableName).UpdatedAt = &now
     err := dbConn.Save(@(variableName)).Error
     if err != nil {
         return err
@@ -123,6 +123,6 @@ func (@(variableName)DB *@(modelName)DBAccess) Update(@(variableName) *db.@(mode
     return nil
 }
 
-@DaoIndexOperationTemplate.template(table.getIndexes(), table.getTableName())
+@DaoIndexOperationTemplate.template(table.getIndexes(), table)
 
 }
