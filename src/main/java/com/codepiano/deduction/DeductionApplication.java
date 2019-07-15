@@ -227,12 +227,12 @@ public class DeductionApplication {
                 .toString();
         writeToGoFile(daoDir, "db_access", db);
         // 生成 service 对象代码
-        String baseService = BaseServiceTemplate.template(servicePackage,packagePath.get("dao"), daoPackage, packagePath.get("common"), commonPackage)
+        String baseService = BaseServiceTemplate.template(servicePackage, packagePath.get("dao"), daoPackage, packagePath.get("common"), commonPackage)
                 .render()
                 .toString();
         writeToGoFile(serviceDir, "service", baseService);
         // 生成 controller 对象代码
-        String baseController = BaseControllerTemplate.template(controllerPackage, basePackage + File.separator + servicePackage, servicePackage)
+        String baseController = BaseControllerTemplate.template(controllerPackage, packagePath.get("service"), servicePackage, packagePath.get("common"), commonPackage)
                 .render()
                 .toString();
         writeToGoFile(controllerDir, "controller", baseController);

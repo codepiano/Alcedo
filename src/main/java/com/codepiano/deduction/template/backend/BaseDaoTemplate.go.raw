@@ -65,7 +65,7 @@ func CurrentDBAccess() *DBAccess {
 }
 
 func injectTraceLogger(db *gorm.DB, ctx context.Context) *gorm.DB {
-	logger, exists := ctx.Value(@commonPackageName.TraceLogger)
+	logger, exists := ctx.Value(@(commonPackageName).TraceLogger)
 	if exists {
 		db.SetLogger(logger.(*logrus.Entry))
 		return db
@@ -75,7 +75,7 @@ func injectTraceLogger(db *gorm.DB, ctx context.Context) *gorm.DB {
 
 func GetDB(ctx gin.Context) *gorm.DB {
 	var tx *gorm.DB
-	txObj, exists := ctx.Value(@commonPackageName.Transaction)
+	txObj, exists := ctx.Value(@(commonPackageName).Transaction)
 	if exists {
 		tx = txObj.(*gorm.DB)
 	}

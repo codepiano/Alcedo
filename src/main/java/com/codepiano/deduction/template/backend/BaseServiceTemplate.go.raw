@@ -20,14 +20,14 @@ type InTransaction func(tx *gorm.DB) error
 func (srv Service) RunInTransaction(ctx *gin.Context, fn InTransaction) error {
 	tx := srv.DB.BeginTransaction()
 	tx.SetLogger(srv.Logger(ctx))
-	ctx = context.WithValue(ctx, @commonPackageName.Transaction, tx)
+	ctx = context.WithValue(ctx, @(commonPackageName).Transaction, tx)
 	return srv.RunInExistsTransaction(ctx, fn)
 }
 
 // 传播机制: 存在就加入，不存在不开启
 func (srv Service) JoinIfExistsTransaction(ctx *gin.Context, fn InTransaction) error {
 	var tx *gorm.DB
-	txObj, exists := ctx.Value(@commonPackageName.Transaction)
+	txObj, exists := ctx.Value(@(commonPackageName).Transaction)
 	if exists {
 		tx = txObj.(*gorm.DB)
 	}
@@ -40,14 +40,14 @@ func (srv Service) JoinIfExistsTransaction(ctx *gin.Context, fn InTransaction) e
 // 传播机制: 开启或者加入
 func (srv Service) BeginOrJoinTransaction(ctx *gin.Context, fn InTransaction) error {
 	var tx *gorm.DB
-	txObj, exists := ctx.Value(@commonPackageName.Transaction)
+	txObj, exists := ctx.Value(@(commonPackageName).Transaction)
 	if exists {
 		tx = txObj.(*gorm.DB)
 	}
 	if tx == nil {
 		tx = srv.DB.BeginTransaction()
 		tx.SetLogger(srv.Logger(ctx))
-		ctx.Value(ctx, @commonPackageName.Transaction)
+		ctx.Value(ctx, @(commonPackageName).Transaction)
 	}
 	return srv.RunInExistsTransaction(ctx, fn)
 }
@@ -55,7 +55,7 @@ func (srv Service) BeginOrJoinTransaction(ctx *gin.Context, fn InTransaction) er
 // 传播机制: 必须在事务中
 func (srv Service) RunInExistsTransaction(ctx *gin.Context, fn InTransaction) error {
 	var tx *gorm.DB
-	txObj, exists := ctx.Value(@commonPackageName.Transaction)
+	txObj, exists := ctx.Value(@(commonPackageName).Transaction)
 	if exists {
 		tx = txObj.(*gorm.DB)
 	}
@@ -87,7 +87,7 @@ func (srv Service) RunInExistsTransaction(ctx *gin.Context, fn InTransaction) er
 }
 
 func (srv *Service) Logger(ctx context.Context) *logrus.Entry {
-	logger, exists := ctx.Value(@commonPackageName.TraceLogger)
+	logger, exists := ctx.Value(@(commonPackageName).TraceLogger)
 	if exists {
 		return logger.(*logrus.Entry)
 	}
