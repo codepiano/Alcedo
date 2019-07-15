@@ -4,7 +4,7 @@
 @import com.codepiano.deduction.models.*
 @import java.util.*
 
-@args (List<TableDescription> tables, String packageName)
+@args (List<TableDescription> tables, String packageName, String commonFullPath, String commonPackageName)
 
 package @packageName
 
@@ -12,6 +12,7 @@ import (
     "fmt"
     "github.com/jinzhu/gorm"
     _ "github.com/jinzhu/gorm/dialects/postgres"
+    "@commonFullPath"
 )
 
 var stdDBAccess *DBAccess
@@ -61,4 +62,29 @@ func ConnectDB(ip string, port int, username string, password string, dbname str
 
 func CurrentDBAccess() *DBAccess {
     return stdDBAccess
+}
+
+func injectTraceLogger(db *gorm.DB, ctx context.Context) *gorm.DB {
+	logger, exists := ctx.Value(@commonPackageName.TraceLogger)
+	if exists {
+		db.SetLogger(logger.(*logrus.Entry))
+		return db
+	}
+	panic(errors.WithStack(errors.Errorf("logger is nil!")))
+}
+
+func GetDB(ctx gin.Context) *gorm.DB {
+	var tx *gorm.DB
+	txObj, exists := ctx.Value(@commonPackageName.Transaction)
+	if exists {
+		tx = txObj.(*gorm.DB)
+	}
+	if tx != nil {
+		// tx 在初始化的时候已经注入过 trace logger
+		return tx
+	}
+	// 克隆，不会克隆底层的 sqldb 对象，不用担心连接池问题
+	db := StdDBAccess.db.New()
+	// 注入trace logger
+	return injectTraceLogger(db, ctx)
 }

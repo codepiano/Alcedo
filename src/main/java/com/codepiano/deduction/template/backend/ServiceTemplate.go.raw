@@ -27,16 +27,16 @@ import (
     "@(packages.get("common"))"
 )
 
-func (srv *Service) Get@(modelName)ByID(id uint64, tx *gorm.DB) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Get@(modelName)ByID(ctx context.Context, id uint64) (*@(beanPackage).@(modelName), error) {
     var @(variableName) *@(beanPackage).@(modelName)
     var err error
-    err = srv.JoinIfExistsTransaction(tx, func(tx *gorm.DB) error {
-        @(variableName), err = srv.DB.@(modelName).GetById(id, tx)
+    err = srv.JoinIfExistsTransaction(ctx, func(tx *gorm.DB) error {
+        @(variableName), err = srv.DB.@(modelName).GetById(ctx, id)
         if err != nil {
             if gorm.IsRecordNotFoundError(err) {
                 return &@(errorPackage).Error{Code: @(errorPackage).RequestDataNotExisted}
             }
-            srv.Logger.Errorf("db error occurred when querying service! %+v", err)
+            srv.Logger(ctx).Errorf("db error occurred when querying service! %+v", err)
             return &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
         }
         return nil
@@ -48,14 +48,14 @@ func (srv *Service) Get@(modelName)ByID(id uint64, tx *gorm.DB) (*@(beanPackage)
 }
 
 // 获取 @modelName 列表
-func (srv *Service) Get@(modelName)List(pageNum, pageSize int, tx *gorm.DB) ([]*@(beanPackage).@(modelName), int, error) {
+func (srv *Service) Get@(modelName)List(ctx context.Context, pageNum, pageSize int) ([]*@(beanPackage).@(modelName), int, error) {
     var @(variableName)List []*@(beanPackage).@(modelName)
     var count *int
     var err error
-    err = srv.JoinIfExistsTransaction(tx, func(tx *gorm.DB) error {
-        @(variableName)List, *count, err = srv.DB.@(modelName).List(pageNum, pageSize, tx)
+    err = srv.JoinIfExistsTransaction(ctx, func(tx *gorm.DB) error {
+        @(variableName)List, *count, err = srv.DB.@(modelName).List(ctx, pageNum, pageSize)
         if err != nil {
-            srv.Logger.Errorf("db error occurred when querying @(variableName)! %+v", err)
+            srv.Logger(ctx).Errorf("db error occurred when querying @(variableName)! %+v", err)
             return &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
         }
         return nil
@@ -67,7 +67,7 @@ func (srv *Service) Get@(modelName)List(pageNum, pageSize int, tx *gorm.DB) ([]*
 }
 
 // 创建 @modelName
-func (srv *Service) Create@(modelName)(param *@(httpPackage).@(modelName)Param, user *rest.LoginUser, tx *gorm.DB) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Create@(modelName)(ctx context.Context, param *@(httpPackage).@(modelName)Param, user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
     @(variableName) := &@(beanPackage).@(modelName){}
     @for (column : table.getColumns()) {
         @if(!excludes.contains(column.getColumnName())) {
@@ -79,15 +79,15 @@ func (srv *Service) Create@(modelName)(param *@(httpPackage).@(modelName)Param, 
     @(variableName).CreatedAt = &now
     @(variableName).UpdatedBy = user.ID
     @(variableName).UpdatedAt = &now
-    err := srv.BeginOrJoinTransaction(tx, func(tx *gorm.DB) error {
-        err := srv.DB.@(modelName).Create(@(variableName), tx)
+    err := srv.BeginOrJoinTransaction(ctx, func(tx *gorm.DB) error {
+        err := srv.DB.@(modelName).Create(ctx, @(variableName))
         if err != nil {
             if pgErr, ok := err.(*pq.Error); ok {
                 if pgErr.Code.Name() == constant.UNIQUE_VIOLATION {
                     return &@(errorPackage).Error{Code: @(errorPackage).RequestDataExists}
                 }
             }
-            srv.Logger.Errorf("db error occurred when creating %+v! error: %+v", @(variableName), err)
+            srv.Logger(ctx).Errorf("db error occurred when creating %+v! error: %+v", @(variableName), err)
             return &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
         }
         return nil
@@ -99,20 +99,20 @@ func (srv *Service) Create@(modelName)(param *@(httpPackage).@(modelName)Param, 
 }
 
 // 删除 @modelName
-func (srv *Service) Delete@(modelName)(id uint64, deleteBy uint64, tx *gorm.DB) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Delete@(modelName)(ctx context.Context, id uint64, deleteBy uint64) (*@(beanPackage).@(modelName), error) {
     var @(variableName) *@(beanPackage).@(modelName)
-    err := srv.BeginOrJoinTransaction(tx, func(tx *gorm.DB) error {
+    err := srv.BeginOrJoinTransaction(ctx, func(tx *gorm.DB) error {
         // 获取 @modelName
-        _, err := srv.Get@(modelName)ByID(id, tx)
+        _, err := srv.Get@(modelName)ByID(ctx, id)
         if err != nil {
             return err
         }
-        @(variableName), err = srv.DB.@(modelName).Delete(id, deleteBy, tx)
+        @(variableName), err = srv.DB.@(modelName).Delete(ctx, id, deleteBy)
         if err != nil {
             if gorm.IsRecordNotFoundError(err) {
                 return &@(errorPackage).Error{Code: @(errorPackage).RequestDataNotExisted}
             }
-            srv.Logger.Errorf("db error occurred when deleting @(variableName)! id: %d, error: %+v", id, err)
+            srv.Logger(ctx).Errorf("db error occurred when deleting @(variableName)! id: %d, error: %+v", id, err)
             return &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
         }
         return nil
@@ -124,23 +124,23 @@ func (srv *Service) Delete@(modelName)(id uint64, deleteBy uint64, tx *gorm.DB) 
 }
 
 // 更新 @modelName
-func (srv *Service) Update@(modelName)(id uint64, param *@(httpPackage).@(modelName)Param, user *rest.LoginUser, tx *gorm.DB) (*@(beanPackage).@(modelName), error) {
+func (srv *Service) Update@(modelName)(ctx context.Context, id uint64, param *@(httpPackage).@(modelName)Param, user *rest.LoginUser) (*@(beanPackage).@(modelName), error) {
     var @(variableName) *@(beanPackage).@(modelName)
-    err := srv.BeginOrJoinTransaction(tx, func(tx *gorm.DB) error {
-        @(variableName), err := srv.DB.@(modelName).GetById(id, tx)
+    err := srv.BeginOrJoinTransaction(ctx, func(tx *gorm.DB) error {
+        @(variableName), err := srv.DB.@(modelName).GetById(ctx, id)
         if err != nil {
             if gorm.IsRecordNotFoundError(err) {
                 return &rest.Error{Code: rest.RequestDataNotExisted}
             }
-            srv.Logger.Errorf("db error when update @modelName info instance! error: %+v", err)
+            srv.Logger(ctx).Errorf("db error when update @modelName info instance! error: %+v", err)
             return &rest.Error{Code: rest.InternalServerError}
         }
-        err = srv.DB.@(modelName).Update(@(variableName), user.ID, tx)
+        err = srv.DB.@(modelName).Update(ctx, @(variableName), user.ID)
         if err != nil {
             if gorm.IsRecordNotFoundError(err) {
                 return &@(errorPackage).Error{Code: @(errorPackage).RequestDataNotExisted}
             }
-            srv.Logger.Errorf("db error occurred when updating @(variableName)! error: %+v", err)
+            srv.Logger(ctx).Errorf("db error occurred when updating @(variableName)! error: %+v", err)
             return &@(errorPackage).Error{Code: @(errorPackage).InternalServerError}
         }
         return nil

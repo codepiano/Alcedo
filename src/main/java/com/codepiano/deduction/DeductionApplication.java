@@ -222,12 +222,12 @@ public class DeductionApplication {
                 .toString();
         writeToGoFile(httpModelDir, "response", response);
         // 生成 dao 对象初始化代码，注入数据库连接
-        String db = BaseDaoTemplate.template(tables, daoPackage)
+        String db = BaseDaoTemplate.template(tables, daoPackage, packagePath.get("common"), commonPackage)
                 .render()
                 .toString();
         writeToGoFile(daoDir, "db_access", db);
         // 生成 service 对象代码
-        String baseService = BaseServiceTemplate.template(servicePackage, basePackage + File.separator + daoPath, daoPackage)
+        String baseService = BaseServiceTemplate.template(servicePackage,packagePath.get("dao"), daoPackage, packagePath.get("common"), commonPackage)
                 .render()
                 .toString();
         writeToGoFile(serviceDir, "service", baseService);

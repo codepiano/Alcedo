@@ -1,4 +1,4 @@
-@args(String packageName, String daoFullPath, String daoPackageName)
+@args(String packageName, String daoFullPath, String daoPackageName, String commonFullPath, String commonPackageName)
 
 package @packageName
 
@@ -6,6 +6,7 @@ import (
     "github.com/sirupsen/logrus"
     "github.com/jinzhu/gorm"
     "@daoFullPath"
+    "@commonFullPath"
 )
 
 type Service struct {
@@ -16,34 +17,53 @@ type Service struct {
 type InTransaction func(tx *gorm.DB) error
 
 // 传播机制: 强制开启新事务
-func (srv Service) RunInTransaction(fn InTransaction) error {
+func (srv Service) RunInTransaction(ctx *gin.Context, fn InTransaction) error {
 	tx := srv.DB.BeginTransaction()
-	return srv.RunInExistsTransaction(tx, fn)
+	tx.SetLogger(srv.Logger(ctx))
+	ctx = context.WithValue(ctx, @commonPackageName.Transaction, tx)
+	return srv.RunInExistsTransaction(ctx, fn)
 }
 
 // 传播机制: 存在就加入，不存在不开启
-func (srv Service) JoinIfExistsTransaction(tx *gorm.DB, fn InTransaction) error {
+func (srv Service) JoinIfExistsTransaction(ctx *gin.Context, fn InTransaction) error {
+	var tx *gorm.DB
+	txObj, exists := ctx.Value(@commonPackageName.Transaction)
+	if exists {
+		tx = txObj.(*gorm.DB)
+	}
 	if tx != nil {
-		return srv.RunInExistsTransaction(tx, fn)
+		return srv.RunInExistsTransaction(ctx, fn)
 	}
 	return fn(nil)
 }
 
 // 传播机制: 开启或者加入
-func (srv Service) BeginOrJoinTransaction(tx *gorm.DB, fn InTransaction) error {
+func (srv Service) BeginOrJoinTransaction(ctx *gin.Context, fn InTransaction) error {
+	var tx *gorm.DB
+	txObj, exists := ctx.Value(@commonPackageName.Transaction)
+	if exists {
+		tx = txObj.(*gorm.DB)
+	}
 	if tx == nil {
 		tx = srv.DB.BeginTransaction()
+		tx.SetLogger(srv.Logger(ctx))
+		ctx.Value(ctx, @commonPackageName.Transaction)
 	}
-	return srv.RunInExistsTransaction(tx, fn)
+	return srv.RunInExistsTransaction(ctx, fn)
 }
 
 // 传播机制: 必须在事务中
-func (srv Service) RunInExistsTransaction(tx *gorm.DB, fn InTransaction) error {
+func (srv Service) RunInExistsTransaction(ctx *gin.Context, fn InTransaction) error {
+	var tx *gorm.DB
+	txObj, exists := ctx.Value(@commonPackageName.Transaction)
+	if exists {
+		tx = txObj.(*gorm.DB)
+	}
 	if tx == nil {
 		panic(errors.WithStack(errors.Errorf("transaction is nil!")))
 	}
 	if tx.Error != nil {
-		srv.Logger.Errorf("error occurred when begin transaction: %+v", tx.Error)
+		srv.Logger(ctx).Errorf("error occurred when begin transaction: %+v".Error)
 		return &rest.Error{Code: rest.InternalServerError}
 	}
 	defer func() {
@@ -55,13 +75,21 @@ func (srv Service) RunInExistsTransaction(tx *gorm.DB, fn InTransaction) error {
 	if err != nil {
 		txErr := tx.Rollback().Error
 		if txErr != nil {
-			srv.Logger.Errorf("error occurred when rollback transaction: %+v", txErr)
+			srv.Logger(ctx).Errorf("error occurred when rollback transaction: %+v"Err)
 		}
 		return err
 	}
 	if err = tx.Commit().Error; err != nil {
-		srv.Logger.Errorf("error occurred when commit transaction: %+v", err)
+		srv.Logger(ctx).Errorf("error occurred when commit transaction: %+v", err)
 		return &rest.Error{Code: rest.InternalServerError}
 	}
 	return nil
+}
+
+func (srv *Service) Logger(ctx context.Context) *logrus.Entry {
+	logger, exists := ctx.Value(@commonPackageName.TraceLogger)
+	if exists {
+		return logger.(*logrus.Entry)
+	}
+	panic(errors.WithStack(errors.Errorf("logger is nil!")))
 }

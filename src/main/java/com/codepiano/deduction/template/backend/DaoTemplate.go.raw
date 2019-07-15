@@ -13,7 +13,9 @@
 package @packageName
 
 import (
+    "context"
     "time"
+
     "github.com/jinzhu/gorm"
     "@(packages.get("bean"))"
     "@(packages.get("common"))"
@@ -24,11 +26,8 @@ type @(modelName)DBAccess struct {
 }
 
 // 分页查询@(modelName)
-func (@(variableName)DB *@(modelName)DBAccess) List(pageNum, pageSize int, tx *gorm.DB) ([]*db.@(modelName), int, error) {
-	var dbConn = @(variableName)DB.db
-	if tx != nil {
-		dbConn = tx
-	}
+func (@(variableName)DB *@(modelName)DBAccess) List(ctx context.Context, pageNum, pageSize int) ([]*db.@(modelName), int, error) {
+	var dbConn = GetDB(ctx)
     @(variableName)List := []*db.@(modelName){}
     var count int
     query := dbConn.Model(&db.@(modelName){})
@@ -55,11 +54,8 @@ func (@(variableName)DB *@(modelName)DBAccess) List(pageNum, pageSize int, tx *g
 }
 
 // 创建@(modelName)
-func (@(variableName)DB *@(modelName)DBAccess) Create(@(variableName) *db.@(modelName), tx *gorm.DB) error {
-	var dbConn = @(variableName)DB.db
-	if tx != nil {
-		dbConn = tx
-	}
+func (@(variableName)DB *@(modelName)DBAccess) Create(ctx context.Context, @(variableName) *db.@(modelName)) error {
+	var dbConn = GetDB(ctx)
     err := dbConn.Create(@(variableName)).Error
     if err != nil {
         return err
@@ -68,19 +64,16 @@ func (@(variableName)DB *@(modelName)DBAccess) Create(@(variableName) *db.@(mode
 }
 
 // 删除@(modelName)
-func (@(variableName)DB *@(modelName)DBAccess) Delete(id uint64, deleteBy uint64, tx *gorm.DB) (*db.@(modelName), error) {
-	var dbConn = @(variableName)DB.db
-	if tx != nil {
-		dbConn = tx
-	}
+func (@(variableName)DB *@(modelName)DBAccess) Delete(ctx context.Context, id uint64, deleteBy uint64) (*db.@(modelName), error) {
+	var dbConn = GetDB(ctx)
     // 查询
-    @(variableName), err := @(variableName)DB.GetById(id, tx)
+    @(variableName), err := dbConn.GetById(id)
     if err != nil {
         return nil, err
     }
     // 更新删除人
     @(variableName).DeletedBy = deleteBy
-    err = @(variableName)DB.Update(@(variableName), deleteBy, tx)
+    err = dbConn.Update(@(variableName), deleteBy)
     if err != nil {
         return nil, err
     }
@@ -93,11 +86,8 @@ func (@(variableName)DB *@(modelName)DBAccess) Delete(id uint64, deleteBy uint64
 }
 
 // 通过 id 查询@(modelName)
-func (@(variableName)DB *@(modelName)DBAccess) GetById(id uint64, tx *gorm.DB) (*db.@(modelName), error) {
-	var dbConn = @(variableName)DB.db
-	if tx != nil {
-		dbConn = tx
-	}
+func (@(variableName)DB *@(modelName)DBAccess) GetById(ctx context.Context, id uint64) (*db.@(modelName), error) {
+	var dbConn = GetDB(ctx)
     @(variableName) := &db.@(modelName){}
     err := dbConn.First(@(variableName), id).Error
     if err != nil {
@@ -107,11 +97,8 @@ func (@(variableName)DB *@(modelName)DBAccess) GetById(id uint64, tx *gorm.DB) (
 }
 
 // 修改@(modelName)信息
-func (@(variableName)DB *@(modelName)DBAccess) Update(@(variableName) *db.@(modelName), updateBy uint64, tx *gorm.DB) error {
-	var dbConn = @(variableName)DB.db
-	if tx != nil {
-		dbConn = tx
-	}
+func (@(variableName)DB *@(modelName)DBAccess) Update(ctx context.Context, @(variableName) *db.@(modelName), updateBy uint64) error {
+	var dbConn = GetDB(ctx)
     // 更新删除人
     @(variableName).UpdatedBy = updateBy
     now := common.Time(time.Now())

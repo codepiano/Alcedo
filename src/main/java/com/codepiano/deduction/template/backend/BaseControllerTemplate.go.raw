@@ -29,3 +29,17 @@ func (ctl *Controller) GetLoginUser(c *gin.Context) *rest.LoginUser {
 	ctl.Logger.Panicf("there is no login user in gin.Context")
 	return nil
 }
+
+func (ctl *Controller) GetContext(c *gin.Context) context.Context {
+	logger, exists := ctx.Value(@commonPackageName.TraceLogger)
+	if !exists {
+        panic(errors.WithStack(errors.Errorf("logger is nil!")))
+	}
+	ctx := context.WithValue(context.Background(), common.TraceLogger, logger.(*logrus.Entry))
+	traceId, exists := ctx.Value(@commonPackageName.TraceId)
+	if !exists {
+        panic(errors.WithStack(errors.Errorf("traceId is nil!")))
+	}
+	ctx := context.WithValue(ctx, common.TraceId, traceId)
+	return ctx
+}

@@ -56,3 +56,9 @@ func ConvertInt642Time(i int64) time.Time {
 
     return result
 }
+
+type ContextKey int
+
+const Transaction ContextKey = 1
+const TraceLogger ContextKey = 2
+const TraceId     ContextKey = 3
