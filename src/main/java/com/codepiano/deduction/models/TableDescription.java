@@ -69,4 +69,8 @@ public class TableDescription {
      * columns
      */
     private List<ColumnDescription> columns;
+    /**
+     * columns map
+     */
+    private Map<String, ColumnDescription> columnsMap;
 }

@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 /**
@@ -190,12 +191,13 @@ public class DeductionApplication {
             // 生成 bean 代码
             List<ColumnDescription> columns = columnService.getAllColumnsInfoFromTable(tableDescription);
             tableDescription.setColumns(columns);
+            tableDescription.setColumnsMap(columns.stream().collect(Collectors.toMap(ColumnDescription::getColumnName, y -> y)));
             String model = BeanTemplate.template(tableDescription, typeTransfer, businessBeanPackage)
                     .render()
                     .toString();
             writeToGoFile(businessModelDir, tableDescription.getTableName(), model);
             // 生成 model 层代码
-            String dao = DaoTemplate.template(packagePath, tableDescription, daoPackage)
+            String dao = DaoTemplate.template(packagePath, tableDescription, daoPackage, typeTransfer)
                     .render()
                     .toString();
             writeToGoFile(daoDir, tableDescription.getTableName() + "_dao", dao);

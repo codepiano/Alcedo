@@ -5,7 +5,7 @@
 @import com.codepiano.deduction.template.backend.*
 @import java.util.*
 
-@args (Map<String,String> packages, TableDescription table, String packageName)
+@args (Map<String,String> packages, TableDescription table, String packageName, TypeTransfer typeTransfer)
 
 @with(modelName = NameTransfer.transferToCamelCase(table.getTableName()),
         variableName = NameTransfer.transferToVariableName(table.getTableName())){
@@ -110,6 +110,6 @@ func (@(variableName)DB *@(modelName)DBAccess) Update(ctx context.Context, @(var
     return nil
 }
 
-@DaoIndexOperationTemplate.template(table.getIndexes(), table)
+@DaoIndexOperationTemplate.template(table.getIndexes(), table, typeTransfer)
 
 }

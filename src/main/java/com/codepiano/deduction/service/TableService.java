@@ -2,6 +2,7 @@ package com.codepiano.deduction.service;
 
 import com.codepiano.deduction.exception.AlcedoException;
 import com.codepiano.deduction.exception.ErrorCode;
+import com.codepiano.deduction.models.ColumnDescription;
 import com.codepiano.deduction.models.IndexDescription;
 import com.codepiano.deduction.models.PrimaryKeyDescription;
 import com.codepiano.deduction.models.TableDescription;

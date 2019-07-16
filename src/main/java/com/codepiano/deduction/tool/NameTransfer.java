@@ -1,6 +1,7 @@
 package com.codepiano.deduction.tool;
 
 import com.codepiano.deduction.models.IndexDescription;
+import com.codepiano.deduction.models.TableDescription;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
@@ -53,4 +54,16 @@ public class NameTransfer {
                 map(NameTransfer::transferToVariableName).
                 collect(Collectors.joining(" , "));
     }
+
+    public static String transferToFunctionParam(TableDescription table, List<IndexDescription> indexes, TypeTransfer typeTransfer) {
+        return indexes.stream().
+                map(indexDescription -> {
+                    var name = transferToVariableName(indexDescription.getColumnName());
+                    var columnDescription = table.getColumnsMap().get(name);
+                    var type = typeTransfer.transferToGoLangType(columnDescription);
+                    return name + " " + type;
+                }).
+                collect(Collectors.joining(", "));
+    }
+
 }

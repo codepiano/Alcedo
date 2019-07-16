@@ -5,7 +5,7 @@
 @import org.apache.commons.lang3.StringUtils;
 @import java.util.*
 
-@args(Map<String, List<IndexDescription>> indexes, TableDescription table)
+@args(Map<String, List<IndexDescription>> indexes, TableDescription table, TypeTransfer typeTransfer)
 
 @with(modelName = NameTransfer.transferToCamelCase(table.getTableName()),
         variableName = NameTransfer.transferToVariableName(table.getTableName())){
@@ -14,9 +14,20 @@
             @continue
         } else {
             @if(index.get(0).getNonUnique()){
+// 通过 @NameTransfer.transferToComment(index) 查询 @modelName 列表
+func (@(variableName)DB *@(modelName)DBAccess) GetBy@(NameTransfer.transferToName(index))(ctx context.Context, @(NameTransfer.transferToFunctionParam(table, index, typeTransfer)) ([]*db.@(modelName), error) {
+	var dbConn = GetDB(ctx)
+	@(variableName) := &[]*db.@(modelName){}
+	err := dbConn.Where("@(NameTransfer.transferToQuery(index))", @(NameTransfer.transferToParam(index))).Find(@(variableName)).Error
+	if err != nil {
+		return nil, err
+	}
+	return *@(variableName), nil
+}
+
             } else {
 // 通过 @NameTransfer.transferToComment(index) 查询 @modelName
-func (@(variableName)DB *@(modelName)DBAccess) GetBy@(NameTransfer.transferToName(index))(ctx context.Context, ruleId uint64, gid []string) (*db.@(modelName), error) {
+func (@(variableName)DB *@(modelName)DBAccess) GetBy@(NameTransfer.transferToName(index))(ctx context.Context, @(NameTransfer.transferToFunctionParam(table, index, typeTransfer)) (*db.@(modelName), error) {
 	var dbConn = GetDB(ctx)
 	@(variableName) := &db.@(modelName){}
 	err := dbConn.Where("@(NameTransfer.transferToQuery(index))", @(NameTransfer.transferToParam(index))).First(@(variableName)).Error
@@ -25,6 +36,7 @@ func (@(variableName)DB *@(modelName)DBAccess) GetBy@(NameTransfer.transferToNam
 	}
 	return @(variableName), nil
 }
+
             }
         }
     }
